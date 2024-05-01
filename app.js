@@ -39,6 +39,33 @@ app.use((err, req, res, next) => {
   res.status(400).json({ error: err.message });
 });
 
+// hadndle file upload
+const fs = require("fs");
+const fileUpload = require("express-fileupload");
+app.use(fileUpload());
+
+// make uploaded files publically accessible
+const uploadsDirectory = path.join(__dirname, "uploads");
+
+// Function to recursively create routes for subdirectories
+function createRoutesForSubdirectories(directory, baseUrl = "") {
+  const subdirectories = fs
+    .readdirSync(directory, { withFileTypes: true })
+    .filter((dirent) => dirent.isDirectory())
+    .map((dirent) => dirent.name);
+
+  subdirectories.forEach((subdirectory) => {
+    const subdirectoryPath = path.join(directory, subdirectory);
+    const subdirectoryUrl = path.join(baseUrl, subdirectory);
+
+    app.use(`/uploads/${subdirectoryUrl}`, express.static(subdirectoryPath));
+    createRoutesForSubdirectories(subdirectoryPath, subdirectoryUrl);
+  });
+}
+
+// Serve static files for each subdirectory within the uploads directory
+createRoutesForSubdirectories(uploadsDirectory);
+
 // connnet to databse
 
 var models = require("./models");
