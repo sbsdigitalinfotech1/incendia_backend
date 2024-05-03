@@ -41,6 +41,7 @@ router.get("/admin/getProductType", AdminController.getProductType);
 router.post("/admin/addProductType", AdminController.addProductType);
 
 // admin subcategory 
+router.get("/admin/getSubCategory", AdminController.getSubCategory);
 router.post("/admin/addSubCategory", AdminController.addSubCategory);
 
 //EXPORT THE ROUTER HERE

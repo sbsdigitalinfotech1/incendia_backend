@@ -9,6 +9,7 @@ module.exports = {
   addSubCategory,
   getProductType,
   getCategory,
+  getSubCategory
 };
 
 function uploadUserMedia(req, res) {
@@ -109,6 +110,19 @@ function getProductType(req, res) {
 }
 function getCategory(req, res) {
   AdminServices.getCategory(req, res)
+    .then((result) => {
+      return ReS(res, { data: result }, CONFIG.STATUS_CODE_OK);
+    })
+    .catch((error) => {
+      return ReE(
+        res,
+        { message: error.message == undefined ? error : error.message },
+        error.statusCode == undefined ? CONFIG.ERROR_CODE : error.statusCode
+      );
+    });
+}
+function getSubCategory(req, res) {
+  AdminServices.getSubCategory(req, res)
     .then((result) => {
       return ReS(res, { data: result }, CONFIG.STATUS_CODE_OK);
     })

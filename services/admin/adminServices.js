@@ -13,7 +13,8 @@ module.exports = {
   addProductType,
   addSubCategory,
   getProductType,
-  getCategory
+  getCategory,
+  getSubCategory
 };
 
 function uploadUserMedia(req, res) {
@@ -375,9 +376,9 @@ function getCategory(req, res) {
       if (body.id) {
         whereCluse[Op.and].push({id: body.id});
       }
-      
-      if (body.id) {
-        whereCluse[Op.and].push({id: body.id});
+
+      if (body.productTypeId) {
+        whereCluse[Op.and].push({productTypeId: body.productTypeId});
       }
 
 
@@ -404,6 +405,102 @@ function getCategory(req, res) {
       }
 
       return resolve(category);
+      
+    } catch (error) {
+      return reject({
+        statusCode: CONFIG.STATUS_CODE_INTERNAL_SERVER,
+        message: error,
+      });
+    }
+  });
+}
+function getSubCategory(req, res) {
+  return new Promise(async function (resolve, reject) {
+    try {
+      const body = req.query;
+      var whereCluse = {};
+      whereCluse[Op.and] = [];
+
+      if (body.id) {
+        whereCluse[Op.and].push({id: body.id});
+      }
+
+      if (body.categoryId) {
+        whereCluse[Op.and].push({categoryId: body.categoryId});
+      }
+
+
+      whereCluse[Op.and].push({status: CONFIG.ACTIVE_RECORD});
+  
+      var [err, subCategory] = await to(
+        SubCategory.findAndCountAll({
+          where: whereCluse
+        })
+      );
+
+      if (err) {
+        return reject({
+          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+          message: err,
+        });
+      }
+
+      if (!subCategory) {
+        return reject({
+          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+          message: CONFIG.MESS_INTERNAL_SERVER_ERROR
+        });
+      }
+
+      return resolve(subCategory);
+      
+    } catch (error) {
+      return reject({
+        statusCode: CONFIG.STATUS_CODE_INTERNAL_SERVER,
+        message: error,
+      });
+    }
+  });
+}
+function getProducts(req, res) {
+  return new Promise(async function (resolve, reject) {
+    try {
+      const body = req.query;
+      var whereCluse = {};
+      whereCluse[Op.and] = [];
+
+      if (body.id) {
+        whereCluse[Op.and].push({id: body.id});
+      }
+
+      if (body.categoryId) {
+        whereCluse[Op.and].push({categoryId: body.categoryId});
+      }
+
+
+      whereCluse[Op.and].push({status: CONFIG.ACTIVE_RECORD});
+  
+      var [err, subCategory] = await to(
+        SubCategory.findAndCountAll({
+          where: whereCluse
+        })
+      );
+
+      if (err) {
+        return reject({
+          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+          message: err,
+        });
+      }
+
+      if (!subCategory) {
+        return reject({
+          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+          message: CONFIG.MESS_INTERNAL_SERVER_ERROR
+        });
+      }
+
+      return resolve(subCategory);
       
     } catch (error) {
       return reject({
