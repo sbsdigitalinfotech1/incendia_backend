@@ -13,13 +13,17 @@ module.exports = (sequelize, DataTypes) => {
     productTypeId: {
       type: DataTypes.BIGINT,
     },
+    status: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: CONFIG.ACTIVE_RECORD,
+    },
   });
   Category.associate = function (models) {
     Category.belongsTo(models.productType, {
-        foreignKey: "productTypeId",
-        onDelete: "cascade",
-      });
+      foreignKey: "productTypeId",
+      onDelete: "cascade",
+    });
   };
-  
+
   return Category;
 };

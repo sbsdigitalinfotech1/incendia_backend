@@ -10,10 +10,12 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       unique: true,
     },
+    status: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: CONFIG.ACTIVE_RECORD,
+    },
   });
-  ProductType.associate = function (models) {
-   
-  };
-  
+  ProductType.associate = function (models) {};
+
   return ProductType;
 };

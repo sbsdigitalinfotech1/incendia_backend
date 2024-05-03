@@ -21,48 +21,52 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.BIGINT,
     },
     productHighlight: {
-        type: DataTypes.TEXT, // Use TEXT data type
-        defaultValue: "{}", // Default value as stringified JSON object
-        get: function() {
-          // Parse JSON string to object
-          return JSON.parse(this.getDataValue('productHighlight'));
-        },
-        set: function(val) {
-          // Stringify object to JSON string
-          this.setDataValue('productHighlight', JSON.stringify(val));
-        },
+      type: DataTypes.TEXT, // Use TEXT data type
+      defaultValue: "{}", // Default value as stringified JSON object
+      get: function () {
+        // Parse JSON string to object
+        return JSON.parse(this.getDataValue("productHighlight"));
+      },
+      set: function (val) {
+        // Stringify object to JSON string
+        this.setDataValue("productHighlight", JSON.stringify(val));
+      },
     },
     productsDescription: {
-        type: DataTypes.TEXT, // Use TEXT data type
-        defaultValue: "{}", // Default value as stringified JSON object
-        get: function() {
-          // Parse JSON string to object
-          return JSON.parse(this.getDataValue('productsDescription'));
-        },
-        set: function(val) {
-          // Stringify object to JSON string
-          this.setDataValue('productsDescription', JSON.stringify(val));
-        },
+      type: DataTypes.TEXT, // Use TEXT data type
+      defaultValue: "{}", // Default value as stringified JSON object
+      get: function () {
+        // Parse JSON string to object
+        return JSON.parse(this.getDataValue("productsDescription"));
+      },
+      set: function (val) {
+        // Stringify object to JSON string
+        this.setDataValue("productsDescription", JSON.stringify(val));
+      },
+    },
+    status: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: CONFIG.ACTIVE_RECORD,
     },
   });
   Product.associate = function (models) {
     Product.hasMany(models.variant, {
-        foreignKey: "productId",
-        onDelete: "cascade",
-      });
+      foreignKey: "productId",
+      onDelete: "cascade",
+    });
     Product.belongsTo(models.productType, {
-        foreignKey: "productTypeId",
-        onDelete: "cascade",
-      });
+      foreignKey: "productTypeId",
+      onDelete: "cascade",
+    });
     Product.belongsTo(models.category, {
-        foreignKey: "categoryId",
-        onDelete: "cascade",
-      });
+      foreignKey: "categoryId",
+      onDelete: "cascade",
+    });
     Product.belongsTo(models.subCategory, {
-        foreignKey: "subCategoryId",
-        onDelete: "cascade",
-      });
+      foreignKey: "subCategoryId",
+      onDelete: "cascade",
+    });
   };
-  
+
   return Product;
 };

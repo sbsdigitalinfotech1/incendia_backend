@@ -31,32 +31,36 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: false,
     },
     productHighlight: {
-        type: DataTypes.TEXT, // Use TEXT data type
-        defaultValue: "{}", // Default value as stringified JSON object
-        get: function() {
-          // Parse JSON string to object
-          return JSON.parse(this.getDataValue('productHighlight'));
-        },
-        set: function(val) {
-          // Stringify object to JSON string
-          this.setDataValue('productHighlight', JSON.stringify(val));
-        },
+      type: DataTypes.TEXT, // Use TEXT data type
+      defaultValue: "{}", // Default value as stringified JSON object
+      get: function () {
+        // Parse JSON string to object
+        return JSON.parse(this.getDataValue("productHighlight"));
+      },
+      set: function (val) {
+        // Stringify object to JSON string
+        this.setDataValue("productHighlight", JSON.stringify(val));
+      },
     },
     productsDescription: {
-        type: DataTypes.TEXT, // Use TEXT data type
-        defaultValue: "{}", // Default value as stringified JSON object
-        get: function() {
-          // Parse JSON string to object
-          return JSON.parse(this.getDataValue('productsDescription'));
-        },
-        set: function(val) {
-          // Stringify object to JSON string
-          this.setDataValue('productsDescription', JSON.stringify(val));
-        },
+      type: DataTypes.TEXT, // Use TEXT data type
+      defaultValue: "{}", // Default value as stringified JSON object
+      get: function () {
+        // Parse JSON string to object
+        return JSON.parse(this.getDataValue("productsDescription"));
+      },
+      set: function (val) {
+        // Stringify object to JSON string
+        this.setDataValue("productsDescription", JSON.stringify(val));
+      },
     },
-    productId:{
-        type: DataTypes.BIGINT
-    }
+    productId: {
+      type: DataTypes.BIGINT,
+    },
+    status: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: CONFIG.ACTIVE_RECORD,
+    },
   });
   Variant.associate = function (models) {
     Variant.hasMany(models.productPhotos, {

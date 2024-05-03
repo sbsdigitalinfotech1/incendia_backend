@@ -32,7 +32,10 @@ CONFIG.ERROR_MISSING_EMAIL = 'Please provide email';
 CONFIG.ERROR_MISSING_PASSWORD = 'Please provide password';
 CONFIG.ERROR_MISSING_OTP = 'Please provide otp';
 CONFIG.ERROR_MISSING_VERIFY_TYPE = 'Please provide verify type';
+CONFIG.ERROR_MISSING_NAME = 'Please provide name';
 CONFIG.ERROR_MISSING_PRODUCT_NAME = 'Please provide product name';
+CONFIG.ERROR_MISSING_PRODUCT_ID = 'Please provide product id';
+CONFIG.ERROR_MISSING_VARIANT_NAME = 'Please provide variant name';
 CONFIG.ERROR_MISSING_COLOR = 'Please provide color';
 CONFIG.ERROR_MISSING_SIZE = 'Please provide size';
 CONFIG.ERROR_MISSING_PRICE = 'Please provide price';
@@ -40,11 +43,17 @@ CONFIG.ERROR_MISSING_MRP = 'Please provide mrp';
 CONFIG.ERROR_MISSING_PRODUCT_HIGHLIGHTS = 'Please provide product highlights';
 CONFIG.ERROR_MISSING_PRODUCT_DESCRIPTION = 'Please provide product description';
 CONFIG.ERROR_MISSING_PRODUCT_TYPE = 'Please provide product type';
+CONFIG.ERROR_MISSING_PRODUCT_TYPE_ID = 'Please provide product type id';
 CONFIG.ERROR_MISSING_PRODUCT_CATEGORY = 'Please provide product category';
+CONFIG.ERROR_MISSING_PRODUCT_CATEGORY_ID = 'Please provide product category id';
 CONFIG.ERROR_MISSING_PRODUCT_SUBCATEGORY = 'Please provide product subcategory';
+CONFIG.ERROR_MISSING_PRODUCT_SUBCATEGORY_ID = 'Please provide product subcategory id';
 
 
 // user types 
 
 CONFIG.USER_TYPE_USER = 1;
 CONFIG.USER_TYP_ADMIN = 2;
+
+
+CONFIG.MESS_INTERNAL_SERVER_ERROR = 'Internal server error !'

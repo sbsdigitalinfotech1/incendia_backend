@@ -15,6 +15,10 @@ module.exports = (sequelize, DataTypes) => {
     url: {
       type: DataTypes.STRING,
     },
+    status: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: CONFIG.ACTIVE_RECORD,
+    },
   });
   ProductPhotos.associate = function (models) {
     ProductPhotos.belongsTo(models.product, {

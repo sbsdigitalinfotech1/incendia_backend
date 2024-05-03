@@ -1,11 +1,19 @@
 const Product = require("../../models").product;
 const Variant = require("../../models").variant;
+const Category = require("../../models").category;
+const ProductType = require("../../models").productType;
+const SubCategory = require("../../models").subCategory;
 const uploadFile = require("../../utils/image_upload");
 
 module.exports = {
   uploadUserMedia,
   addProduct,
-  addVariant
+  addVariant,
+  addCategory,
+  addProductType,
+  addSubCategory,
+  getProductType,
+  getCategory
 };
 
 function uploadUserMedia(req, res) {
@@ -14,8 +22,12 @@ function uploadUserMedia(req, res) {
       var file = req.files;
 
       if (file.image !== undefined) {
-        const media=await uploadFile.uploadOnServer(file.image, `/user`, "hdship");
-        console.log(media,"file uploaded");
+        const media = await uploadFile.uploadOnServer(
+          file.image,
+          `/user`,
+          "hdship"
+        );
+        console.log(media, "file uploaded");
         return resolve("file uploaded successfully");
       } else {
         console.log("no file found");
@@ -26,7 +38,6 @@ function uploadUserMedia(req, res) {
     }
   });
 }
-
 
 function addProduct(req, res) {
   return new Promise(async function (resolve, reject) {
@@ -42,19 +53,19 @@ function addProduct(req, res) {
       if (!body.productTypeId) {
         return reject({
           statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
-          message: CONFIG.ERROR_MISSING_PRODUCT_TYPE,
+          message: CONFIG.ERROR_MISSING_PRODUCT_TYPE_ID,
         });
       }
       if (!body.categoryId) {
         return reject({
           statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
-          message: CONFIG.ERROR_MISSING_PRODUCT_CATEGORY,
+          message: CONFIG.ERROR_MISSING_PRODUCT_CATEGORY_ID,
         });
       }
       if (!body.subCategoryId) {
         return reject({
           statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
-          message: CONFIG.ERROR_MISSING_PRODUCT_SUBCATEGORY,
+          message: CONFIG.ERROR_MISSING_PRODUCT_SUBCATEGORY_ID,
         });
       }
       if (!body.productHighlight) {
@@ -69,10 +80,10 @@ function addProduct(req, res) {
           message: CONFIG.ERROR_MISSING_PRODUCT_DESCRIPTION,
         });
       }
-  
+
       var [err, product] = await to(
         Product.create({
-          ...body
+          ...body,
         })
       );
 
@@ -83,15 +94,14 @@ function addProduct(req, res) {
         });
       }
 
-      if(!product){
+      if (!product) {
         return reject({
           statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
-          message: 'not added',
+          message: "not added",
         });
       }
 
       return resolve("added successfully");
-      
     } catch (error) {
       return reject({
         statusCode: CONFIG.STATUS_CODE_INTERNAL_SERVER,
@@ -108,7 +118,7 @@ function addVariant(req, res) {
       if (!body.name) {
         return reject({
           statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
-          message: CONFIG.ERROR_MISSING_PRODUCT_NAME,
+          message: CONFIG.ERROR_MISSING_VARIANT_NAME,
         });
       }
       if (!body.color) {
@@ -135,10 +145,16 @@ function addVariant(req, res) {
           message: CONFIG.ERROR_MISSING_MRP,
         });
       }
-  
+      if (!body.productId) {
+        return reject({
+          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+          message: CONFIG.ERROR_MISSING_PRODUCT_ID,
+        });
+      }
+
       var [err, variant] = await to(
         Variant.create({
-          ...body
+          ...body,
         })
       );
 
@@ -149,15 +165,14 @@ function addVariant(req, res) {
         });
       }
 
-      if(!variant){
+      if (!variant) {
         return reject({
           statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
-          message: 'not added',
+          message: "not added",
         });
       }
 
       return resolve("added successfully");
-      
     } catch (error) {
       return reject({
         statusCode: CONFIG.STATUS_CODE_INTERNAL_SERVER,
@@ -167,3 +182,234 @@ function addVariant(req, res) {
   });
 }
 
+function addCategory(req, res) {
+  return new Promise(async function (resolve, reject) {
+    try {
+      const body = req.body;
+
+      if (!body.name) {
+        return reject({
+          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+          message: CONFIG.ERROR_MISSING_NAME,
+        });
+      }
+      if (!body.productTypeId) {
+        return reject({
+          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+          message: CONFIG.ERROR_MISSING_PRODUCT_TYPE_ID,
+        });
+      }
+
+      var [err, category] = await to(
+        Category.create({
+          ...body,
+        })
+      );
+
+      if (err) {
+        return reject({
+          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+          message: err,
+        });
+      }
+
+      if (!category) {
+        return reject({
+          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+          message: "not added",
+        });
+      }
+
+      return resolve("added successfully");
+    } catch (error) {
+      return reject({
+        statusCode: CONFIG.STATUS_CODE_INTERNAL_SERVER,
+        message: error,
+      });
+    }
+  });
+}
+function addSubCategory(req, res) {
+  return new Promise(async function (resolve, reject) {
+    try {
+      const body = req.body;
+
+      if (!body.name) {
+        return reject({
+          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+          message: CONFIG.ERROR_MISSING_NAME,
+        });
+      }
+      if (!body.categoryId) {
+        return reject({
+          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+          message: CONFIG.ERROR_MISSING_PRODUCT_CATEGORY_ID,
+        });
+      }
+
+      var [err, subCategory] = await to(
+        SubCategory.create({
+          ...body,
+        })
+      );
+
+      if (err) {
+        return reject({
+          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+          message: err,
+        });
+      }
+
+      if (!subCategory) {
+        return reject({
+          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+          message: "not added",
+        });
+      }
+
+      return resolve("added successfully");
+    } catch (error) {
+      return reject({
+        statusCode: CONFIG.STATUS_CODE_INTERNAL_SERVER,
+        message: error,
+      });
+    }
+  });
+}
+function addProductType(req, res) {
+  return new Promise(async function (resolve, reject) {
+    try {
+      const body = req.body;
+
+      if (!body.name) {
+        return reject({
+          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+          message: CONFIG.ERROR_MISSING_NAME,
+        });
+      }
+
+      var [err, productType] = await to(
+        ProductType.create({
+          ...body,
+        })
+      );
+
+      if (err) {
+        return reject({
+          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+          message: err,
+        });
+      }
+
+      if (!productType) {
+        return reject({
+          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+          message: "not added",
+        });
+      }
+
+      return resolve("added successfully");
+    } catch (error) {
+      return reject({
+        statusCode: CONFIG.STATUS_CODE_INTERNAL_SERVER,
+        message: error,
+      });
+    }
+  });
+}
+
+
+// get requests 
+
+function getProductType(req, res) {
+  return new Promise(async function (resolve, reject) {
+    try {
+      const body = req.query;
+      var whereCluse = {};
+      whereCluse[Op.and] = [];
+
+      if (body.id) {
+        whereCluse[Op.and].push({id: body.id});
+      }
+
+
+      whereCluse[Op.and].push({status: CONFIG.ACTIVE_RECORD});
+  
+      var [err, productType] = await to(
+        ProductType.findAndCountAll({
+          where: whereCluse
+        })
+      );
+
+      if (err) {
+        return reject({
+          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+          message: err,
+        });
+      }
+
+      if (!productType) {
+        return reject({
+          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+          message: CONFIG.MESS_INTERNAL_SERVER_ERROR
+        });
+      }
+
+      return resolve(productType);
+      
+    } catch (error) {
+      return reject({
+        statusCode: CONFIG.STATUS_CODE_INTERNAL_SERVER,
+        message: error,
+      });
+    }
+  });
+}
+function getCategory(req, res) {
+  return new Promise(async function (resolve, reject) {
+    try {
+      const body = req.query;
+      var whereCluse = {};
+      whereCluse[Op.and] = [];
+
+      if (body.id) {
+        whereCluse[Op.and].push({id: body.id});
+      }
+      
+      if (body.id) {
+        whereCluse[Op.and].push({id: body.id});
+      }
+
+
+      whereCluse[Op.and].push({status: CONFIG.ACTIVE_RECORD});
+  
+      var [err, category] = await to(
+        Category.findAndCountAll({
+          where: whereCluse
+        })
+      );
+
+      if (err) {
+        return reject({
+          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+          message: err,
+        });
+      }
+
+      if (!category) {
+        return reject({
+          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+          message: CONFIG.MESS_INTERNAL_SERVER_ERROR
+        });
+      }
+
+      return resolve(category);
+      
+    } catch (error) {
+      return reject({
+        statusCode: CONFIG.STATUS_CODE_INTERNAL_SERVER,
+        message: error,
+      });
+    }
+  });
+}

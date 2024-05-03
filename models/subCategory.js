@@ -13,13 +13,17 @@ module.exports = (sequelize, DataTypes) => {
     categoryId: {
       type: DataTypes.BIGINT,
     },
+    status: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: CONFIG.ACTIVE_RECORD,
+    },
   });
   SubCategory.associate = function (models) {
     SubCategory.belongsTo(models.category, {
-        foreignKey: "categoryId",
-        onDelete: "cascade",
-      });
+      foreignKey: "categoryId",
+      onDelete: "cascade",
+    });
   };
-  
+
   return SubCategory;
 };
