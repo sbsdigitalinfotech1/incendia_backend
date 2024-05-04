@@ -44,6 +44,10 @@ module.exports = (sequelize, DataTypes) => {
         this.setDataValue("productsDescription", JSON.stringify(val));
       },
     },
+    active: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: CONFIG.ACTIVE_RECORD,
+    },
     status: {
       type: DataTypes.BOOLEAN,
       defaultValue: CONFIG.ACTIVE_RECORD,

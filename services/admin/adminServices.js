@@ -1,3 +1,5 @@
+const Sequelize = require("sequelize");
+const Op = Sequelize.Op;
 const Product = require("../../models").product;
 const Variant = require("../../models").variant;
 const Category = require("../../models").category;
@@ -14,7 +16,9 @@ module.exports = {
   addSubCategory,
   getProductType,
   getCategory,
-  getSubCategory
+  getSubCategory,
+  getProducts,
+  getVariant,
 };
 
 function uploadUserMedia(req, res) {
@@ -150,6 +154,12 @@ function addVariant(req, res) {
         return reject({
           statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
           message: CONFIG.ERROR_MISSING_PRODUCT_ID,
+        });
+      }
+      if (!body.stock) {
+        return reject({
+          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+          message: CONFIG.ERROR_MISSING_STOCK,
         });
       }
 
@@ -319,8 +329,7 @@ function addProductType(req, res) {
   });
 }
 
-
-// get requests 
+// get requests
 
 function getProductType(req, res) {
   return new Promise(async function (resolve, reject) {
@@ -330,15 +339,15 @@ function getProductType(req, res) {
       whereCluse[Op.and] = [];
 
       if (body.id) {
-        whereCluse[Op.and].push({id: body.id});
+        whereCluse[Op.and].push({ id: body.id });
       }
 
+      whereCluse[Op.and].push({ status: CONFIG.ACTIVE_RECORD });
 
-      whereCluse[Op.and].push({status: CONFIG.ACTIVE_RECORD});
-  
       var [err, productType] = await to(
         ProductType.findAndCountAll({
-          where: whereCluse
+          where: whereCluse,
+          order: [["createdAt", "DESC"]],
         })
       );
 
@@ -352,12 +361,11 @@ function getProductType(req, res) {
       if (!productType) {
         return reject({
           statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
-          message: CONFIG.MESS_INTERNAL_SERVER_ERROR
+          message: CONFIG.MESS_INTERNAL_SERVER_ERROR,
         });
       }
 
       return resolve(productType);
-      
     } catch (error) {
       return reject({
         statusCode: CONFIG.STATUS_CODE_INTERNAL_SERVER,
@@ -374,19 +382,18 @@ function getCategory(req, res) {
       whereCluse[Op.and] = [];
 
       if (body.id) {
-        whereCluse[Op.and].push({id: body.id});
+        whereCluse[Op.and].push({ id: body.id });
       }
 
       if (body.productTypeId) {
-        whereCluse[Op.and].push({productTypeId: body.productTypeId});
+        whereCluse[Op.and].push({ productTypeId: body.productTypeId });
       }
 
+      whereCluse[Op.and].push({ status: CONFIG.ACTIVE_RECORD });
 
-      whereCluse[Op.and].push({status: CONFIG.ACTIVE_RECORD});
-  
       var [err, category] = await to(
         Category.findAndCountAll({
-          where: whereCluse
+          where: whereCluse,
         })
       );
 
@@ -400,12 +407,11 @@ function getCategory(req, res) {
       if (!category) {
         return reject({
           statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
-          message: CONFIG.MESS_INTERNAL_SERVER_ERROR
+          message: CONFIG.MESS_INTERNAL_SERVER_ERROR,
         });
       }
 
       return resolve(category);
-      
     } catch (error) {
       return reject({
         statusCode: CONFIG.STATUS_CODE_INTERNAL_SERVER,
@@ -422,19 +428,18 @@ function getSubCategory(req, res) {
       whereCluse[Op.and] = [];
 
       if (body.id) {
-        whereCluse[Op.and].push({id: body.id});
+        whereCluse[Op.and].push({ id: body.id });
       }
 
       if (body.categoryId) {
-        whereCluse[Op.and].push({categoryId: body.categoryId});
+        whereCluse[Op.and].push({ categoryId: body.categoryId });
       }
 
+      whereCluse[Op.and].push({ status: CONFIG.ACTIVE_RECORD });
 
-      whereCluse[Op.and].push({status: CONFIG.ACTIVE_RECORD});
-  
       var [err, subCategory] = await to(
         SubCategory.findAndCountAll({
-          where: whereCluse
+          where: whereCluse,
         })
       );
 
@@ -448,12 +453,11 @@ function getSubCategory(req, res) {
       if (!subCategory) {
         return reject({
           statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
-          message: CONFIG.MESS_INTERNAL_SERVER_ERROR
+          message: CONFIG.MESS_INTERNAL_SERVER_ERROR,
         });
       }
 
       return resolve(subCategory);
-      
     } catch (error) {
       return reject({
         statusCode: CONFIG.STATUS_CODE_INTERNAL_SERVER,
@@ -468,21 +472,35 @@ function getProducts(req, res) {
       const body = req.query;
       var whereCluse = {};
       whereCluse[Op.and] = [];
+      const page = body.page ?? 1;
+      const limit = body.pageSize ?? 10;
+      const offset = (page - 1) * limit;
 
       if (body.id) {
-        whereCluse[Op.and].push({id: body.id});
+        whereCluse[Op.and].push({ id: body.id });
       }
 
+      if (body.productTypeId) {
+        whereCluse[Op.and].push({ productTypeId: body.productTypeId });
+      }
       if (body.categoryId) {
-        whereCluse[Op.and].push({categoryId: body.categoryId});
+        whereCluse[Op.and].push({ categoryId: body.categoryId });
+      }
+      if (body.subCategoryId) {
+        whereCluse[Op.and].push({ subCategoryId: body.subCategoryId });
+      }
+      if (body.active) {
+        whereCluse[Op.and].push({ active: body.active });
       }
 
+      whereCluse[Op.and].push({ status: CONFIG.ACTIVE_RECORD });
 
-      whereCluse[Op.and].push({status: CONFIG.ACTIVE_RECORD});
-  
-      var [err, subCategory] = await to(
-        SubCategory.findAndCountAll({
-          where: whereCluse
+      var [err, product] = await to(
+        Product.findAndCountAll({
+          where: whereCluse,
+          limit: limit,
+          offset: offset,
+          order: [["createdAt", "DESC"]],
         })
       );
 
@@ -493,15 +511,66 @@ function getProducts(req, res) {
         });
       }
 
-      if (!subCategory) {
+      if (!product) {
         return reject({
           statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
-          message: CONFIG.MESS_INTERNAL_SERVER_ERROR
+          message: CONFIG.MESS_INTERNAL_SERVER_ERROR,
         });
       }
 
-      return resolve(subCategory);
-      
+      return resolve(product);
+    } catch (error) {
+      return reject({
+        statusCode: CONFIG.STATUS_CODE_INTERNAL_SERVER,
+        message: error,
+      });
+    }
+  });
+}
+function getVariant(req, res) {
+  return new Promise(async function (resolve, reject) {
+    try {
+      const body = req.query;
+      var whereCluse = {};
+      whereCluse[Op.and] = [];
+      const page = body.page ?? 1;
+      const limit = body.pageSize ?? 10;
+      const offset = (page - 1) * limit;
+
+      if (body.id) {
+        whereCluse[Op.and].push({ id: body.id });
+      }
+
+      if (body.active) {
+        whereCluse[Op.and].push({ active: body.active });
+      }
+
+      whereCluse[Op.and].push({ status: CONFIG.ACTIVE_RECORD });
+
+      var [err, variant] = await to(
+        Variant.findAndCountAll({
+          where: whereCluse,
+          limit: limit,
+          offset: offset,
+          order: [["createdAt", "DESC"]],
+        })
+      );
+
+      if (err) {
+        return reject({
+          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+          message: err,
+        });
+      }
+
+      if (!variant) {
+        return reject({
+          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+          message: CONFIG.MESS_INTERNAL_SERVER_ERROR,
+        });
+      }
+
+      return resolve(variant);
     } catch (error) {
       return reject({
         statusCode: CONFIG.STATUS_CODE_INTERNAL_SERVER,

@@ -27,9 +27,11 @@ router.post("/admin/register", AdminAuthController.Register);
 router.post("/admin/verifyAccount", AdminAuthController.verifyAccount);
 
 // admin product 
+router.get("/admin/getProducts", AdminController.getProducts);
 router.post("/admin/addProduct", AdminController.addProduct);
 
 // admin variant 
+router.get("/admin/getVariant", AdminController.getVariant);
 router.post("/admin/addVariant", AdminController.addVariant);
 
 // admin category 

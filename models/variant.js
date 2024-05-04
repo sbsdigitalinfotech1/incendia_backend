@@ -61,6 +61,14 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.BOOLEAN,
       defaultValue: CONFIG.ACTIVE_RECORD,
     },
+    stock:{
+        type: DataTypes.INTEGER,
+        defaultValue: CONFIG.INACTIVE_RECORD,
+      },
+      active: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: CONFIG.ACTIVE_RECORD,
+      },
   });
   Variant.associate = function (models) {
     Variant.hasMany(models.productPhotos, {

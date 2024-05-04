@@ -9,7 +9,9 @@ module.exports = {
   addSubCategory,
   getProductType,
   getCategory,
-  getSubCategory
+  getSubCategory,
+  getProducts,
+  getVariant
 };
 
 function uploadUserMedia(req, res) {
@@ -123,6 +125,32 @@ function getCategory(req, res) {
 }
 function getSubCategory(req, res) {
   AdminServices.getSubCategory(req, res)
+    .then((result) => {
+      return ReS(res, { data: result }, CONFIG.STATUS_CODE_OK);
+    })
+    .catch((error) => {
+      return ReE(
+        res,
+        { message: error.message == undefined ? error : error.message },
+        error.statusCode == undefined ? CONFIG.ERROR_CODE : error.statusCode
+      );
+    });
+}
+function getProducts(req, res) {
+  AdminServices.getProducts(req, res)
+    .then((result) => {
+      return ReS(res, { data: result }, CONFIG.STATUS_CODE_OK);
+    })
+    .catch((error) => {
+      return ReE(
+        res,
+        { message: error.message == undefined ? error : error.message },
+        error.statusCode == undefined ? CONFIG.ERROR_CODE : error.statusCode
+      );
+    });
+}
+function getVariant(req, res) {
+  AdminServices.getVariant(req, res)
     .then((result) => {
       return ReS(res, { data: result }, CONFIG.STATUS_CODE_OK);
     })
