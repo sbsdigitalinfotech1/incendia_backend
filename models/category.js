@@ -23,6 +23,11 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey: "productTypeId",
       onDelete: "cascade",
     });
+    Category.hasMany(models.subCategory, {
+      foreignKey: "categoryId",
+      as:"subCategories",
+      onDelete: "cascade",
+    });
   };
 
   return Category;

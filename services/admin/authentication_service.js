@@ -38,16 +38,23 @@ function Login(req, res) {
         });
       }
       if (!user) {
-        return resolve("not registered");
+        return reject({
+          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+          message: "not registered",
+        });
       }
 
       // Check if password is correct
       if (!bcrypt.compareSync(body.password, user.password)) {
-        return reject("Incorrect password");
+        return reject({
+          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+          message:"Incorrect password"});
       }
 
       if (user.verified == false) {
-        return resolve("not verified");
+        return reject({
+          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+          message:"not verified"});
       }
 
       var token = user.getJWT();

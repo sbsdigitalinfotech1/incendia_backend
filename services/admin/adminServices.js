@@ -5,6 +5,7 @@ const Variant = require("../../models").variant;
 const Category = require("../../models").category;
 const ProductType = require("../../models").productType;
 const SubCategory = require("../../models").subCategory;
+const ProductPhotos = require("../../models").productPhotos;
 const uploadFile = require("../../utils/image_upload");
 
 module.exports = {
@@ -257,6 +258,12 @@ function addSubCategory(req, res) {
           message: CONFIG.ERROR_MISSING_PRODUCT_CATEGORY_ID,
         });
       }
+      if (!body.productTypeId) {
+        return reject({
+          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+          message: CONFIG.ERROR_MISSING_PRODUCT_TYPE_ID,
+        });
+      }
 
       var [err, subCategory] = await to(
         SubCategory.create({
@@ -338,8 +345,23 @@ function getProductType(req, res) {
       var whereCluse = {};
       whereCluse[Op.and] = [];
 
-      if (body.id) {
+      if (body.id && body.id !== "undefined") {
         whereCluse[Op.and].push({ id: body.id });
+      }
+
+      if (body.keyword && body.keyword !== "undefined") {
+        const array = body.keyword.split(" ");
+        for (var i = 0; i < array.length; i++) {
+          whereCluse[Op.and].push({
+            [Op.or]: [
+              {
+                name: {
+                  [Op.like]: "%" + array[i] + "%",
+                },
+              },
+            ],
+          });
+        }
       }
 
       whereCluse[Op.and].push({ status: CONFIG.ACTIVE_RECORD });
@@ -348,6 +370,13 @@ function getProductType(req, res) {
         ProductType.findAndCountAll({
           where: whereCluse,
           order: [["createdAt", "DESC"]],
+          include:[
+            {
+              model: Category,
+              as:"categories",
+              required: false,
+            },
+          ]
         })
       );
 
@@ -381,11 +410,29 @@ function getCategory(req, res) {
       var whereCluse = {};
       whereCluse[Op.and] = [];
 
-      if (body.id) {
+      if (body.id && body.id !== "undefined") {
         whereCluse[Op.and].push({ id: body.id });
       }
 
-      if (body.productTypeId) {
+      if (body.keyword && body.keyword !== "undefined") {
+        const array = body.keyword.split(" ");
+        for (var i = 0; i < array.length; i++) {
+          whereCluse[Op.and].push({
+            [Op.or]: [
+              {
+                name: {
+                  [Op.like]: "%" + array[i] + "%",
+                },
+              },
+              Sequelize.where(Sequelize.col("productType.name"), {
+                [Op.like]: "%" + array[i] + "%",
+              }),
+            ],
+          });
+        }
+      }
+
+      if (body.productTypeId && body.productTypeId !== "undefined") {
         whereCluse[Op.and].push({ productTypeId: body.productTypeId });
       }
 
@@ -394,6 +441,18 @@ function getCategory(req, res) {
       var [err, category] = await to(
         Category.findAndCountAll({
           where: whereCluse,
+          order: [["createdAt", "DESC"]],
+          include: [
+            {
+              model: ProductType, 
+              required: true,
+            },
+            {
+              model: SubCategory,
+              as: "subCategories",
+              required: false,
+            },
+          ],
         })
       );
 
@@ -427,12 +486,30 @@ function getSubCategory(req, res) {
       var whereCluse = {};
       whereCluse[Op.and] = [];
 
-      if (body.id) {
+      if (body.id && body.id !== "undefined") {
         whereCluse[Op.and].push({ id: body.id });
       }
 
-      if (body.categoryId) {
+      if (body.categoryId && body.categoryId !== "undefined") {
         whereCluse[Op.and].push({ categoryId: body.categoryId });
+      }
+
+      if (body.keyword && body.keyword !== "undefined") {
+        const array = body.keyword.split(" ");
+        for (var i = 0; i < array.length; i++) {
+          whereCluse[Op.and].push({
+            [Op.or]: [
+              {
+                name: {
+                  [Op.like]: "%" + array[i] + "%",
+                },
+              },
+              Sequelize.where(Sequelize.col("category.name"), {
+                [Op.like]: "%" + array[i] + "%",
+              }),
+            ],
+          });
+        }
       }
 
       whereCluse[Op.and].push({ status: CONFIG.ACTIVE_RECORD });
@@ -440,6 +517,18 @@ function getSubCategory(req, res) {
       var [err, subCategory] = await to(
         SubCategory.findAndCountAll({
           where: whereCluse,
+          order: [["createdAt", "DESC"]],
+          include: [
+            {
+              model: ProductType, 
+              required: true,
+            },
+            {
+              model: Category,
+              as: "category",
+              required: true,
+            },
+          ],
         })
       );
 
@@ -476,21 +565,45 @@ function getProducts(req, res) {
       const limit = body.pageSize ?? 10;
       const offset = (page - 1) * limit;
 
-      if (body.id) {
+      if (body.id && body.id !== "undefined") {
         whereCluse[Op.and].push({ id: body.id });
       }
 
-      if (body.productTypeId) {
+      if (body.productTypeId && body.productTypeId !== "undefined") {
         whereCluse[Op.and].push({ productTypeId: body.productTypeId });
       }
-      if (body.categoryId) {
+      if (body.categoryId && body.categoryId !== "undefined") {
         whereCluse[Op.and].push({ categoryId: body.categoryId });
       }
-      if (body.subCategoryId) {
+      if (body.subCategoryId && body.subCategoryId !== "undefined") {
         whereCluse[Op.and].push({ subCategoryId: body.subCategoryId });
       }
-      if (body.active) {
+      if (body.active && body.active !== "undefined") {
         whereCluse[Op.and].push({ active: body.active });
+      }
+
+      if (body.keyword && body.keyword !== "undefined") {
+        const array = body.keyword.split(" ");
+        for (var i = 0; i < array.length; i++) {
+          whereCluse[Op.and].push({
+            [Op.or]: [
+              {
+                name: {
+                  [Op.like]: "%" + array[i] + "%",
+                },
+              },
+              Sequelize.where(Sequelize.col("category.name"), {
+                [Op.like]: "%" + array[i] + "%",
+              }),
+              Sequelize.where(Sequelize.col("subCategory.name"), {
+                [Op.like]: "%" + array[i] + "%",
+              }),
+              Sequelize.where(Sequelize.col("productType.name"), {
+                [Op.like]: "%" + array[i] + "%",
+              }),
+            ],
+          });
+        }
       }
 
       whereCluse[Op.and].push({ status: CONFIG.ACTIVE_RECORD });
@@ -501,6 +614,23 @@ function getProducts(req, res) {
           limit: limit,
           offset: offset,
           order: [["createdAt", "DESC"]],
+          include: [
+            {
+              model: ProductType,
+              as: "productType",
+              required: true,
+            },
+            {
+              model: Category,
+              as: "category",
+              required: true,
+            },
+            {
+              model: SubCategory,
+              as: "subCategory",
+              required: true,
+            },
+          ],
         })
       );
 
@@ -537,12 +667,32 @@ function getVariant(req, res) {
       const limit = body.pageSize ?? 10;
       const offset = (page - 1) * limit;
 
-      if (body.id) {
+      if (body.id && body.id !== "undefined") {
         whereCluse[Op.and].push({ id: body.id });
       }
 
-      if (body.active) {
+      if (body.active && body.active !== "undefined") {
         whereCluse[Op.and].push({ active: body.active });
+      }
+      if (body.productId && body.productId !== "undefined") {
+        whereCluse[Op.and].push({ productId: body.productId });
+      }
+      if (body.keyword && body.keyword !== "undefined") {
+        const array = body.keyword.split(" ");
+        for (var i = 0; i < array.length; i++) {
+          whereCluse[Op.and].push({
+            [Op.or]: [
+              {
+                name: {
+                  [Op.like]: "%" + array[i] + "%",
+                },
+              },
+              Sequelize.where(Sequelize.col("product.name"), {
+                [Op.like]: "%" + array[i] + "%",
+              }),
+            ],
+          });
+        }
       }
 
       whereCluse[Op.and].push({ status: CONFIG.ACTIVE_RECORD });
@@ -553,6 +703,31 @@ function getVariant(req, res) {
           limit: limit,
           offset: offset,
           order: [["createdAt", "DESC"]],
+          include: [
+            {
+              model: Product,
+              as: "product",
+              required: true,
+              include: [
+                {
+                  model: ProductType,
+                  as: "productType",
+                  required: true,
+                },
+                {
+                  model: Category,
+                  as: "category",
+                  required: true,
+                },
+                {
+                  model: SubCategory,
+                  as: "subCategory",
+                  required: true,
+                },
+              ],
+            },
+            { model: ProductPhotos, as: "productPhotos", required: true },
+          ],
         })
       );
 

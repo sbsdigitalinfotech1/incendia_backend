@@ -15,7 +15,13 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: CONFIG.ACTIVE_RECORD,
     },
   });
-  ProductType.associate = function (models) {};
+  ProductType.associate = function (models) {
+    ProductType.hasMany(models.category, {
+      foreignKey: "productTypeId",
+      as:"categories",
+      onDelete: "cascade",
+    });
+  };
 
   return ProductType;
 };
