@@ -20,6 +20,11 @@ module.exports = {
   getSubCategory,
   getProducts,
   getVariant,
+  updateProduct,
+  updateVariant,
+  updateCategory,
+  updateProductType,
+  updateSubCategory,
 };
 
 function uploadUserMedia(req, res) {
@@ -81,6 +86,12 @@ function addProduct(req, res) {
         });
       }
       if (!body.productsDescription) {
+        return reject({
+          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+          message: CONFIG.ERROR_MISSING_PRODUCT_DESCRIPTION,
+        });
+      }
+      if (!body.otherDescription) {
         return reject({
           statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
           message: CONFIG.ERROR_MISSING_PRODUCT_DESCRIPTION,
@@ -370,13 +381,13 @@ function getProductType(req, res) {
         ProductType.findAndCountAll({
           where: whereCluse,
           order: [["createdAt", "DESC"]],
-          include:[
+          include: [
             {
               model: Category,
-              as:"categories",
+              as: "categories",
               required: false,
             },
-          ]
+          ],
         })
       );
 
@@ -444,7 +455,7 @@ function getCategory(req, res) {
           order: [["createdAt", "DESC"]],
           include: [
             {
-              model: ProductType, 
+              model: ProductType,
               required: true,
             },
             {
@@ -520,7 +531,7 @@ function getSubCategory(req, res) {
           order: [["createdAt", "DESC"]],
           include: [
             {
-              model: ProductType, 
+              model: ProductType,
               required: true,
             },
             {
@@ -746,6 +757,325 @@ function getVariant(req, res) {
       }
 
       return resolve(variant);
+    } catch (error) {
+      return reject({
+        statusCode: CONFIG.STATUS_CODE_INTERNAL_SERVER,
+        message: error,
+      });
+    }
+  });
+}
+
+// update apis
+
+function updateProduct(req, res) {
+  return new Promise(async function (resolve, reject) {
+    try {
+      const body = req.body;
+
+      if (!body.id) {
+        return reject({
+          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+          message: CONFIG.ERROR_MISSING_ID,
+        });
+      }
+
+      var [err, product] = await to(
+        Product.findOne({
+          where: {
+            id: body.id,
+          },
+        })
+      );
+
+      if (err) {
+        return reject({
+          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+          message: err,
+        });
+      }
+
+      if (!product) {
+        return reject({
+          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+          message: "product not found",
+        });
+      }
+
+      [err, product] = await to(
+        product.update({
+          ...body,
+        })
+      );
+
+      if (err) {
+        return reject({
+          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+          message: err,
+        });
+      }
+
+      if (!product) {
+        return reject({
+          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+          message: "error updating",
+        });
+      }
+
+      return resolve("updated successfully");
+    } catch (error) {
+      return reject({
+        statusCode: CONFIG.STATUS_CODE_INTERNAL_SERVER,
+        message: error,
+      });
+    }
+  });
+}
+function updateVariant(req, res) {
+  return new Promise(async function (resolve, reject) {
+    try {
+      const body = req.body;
+
+      if (!body.id) {
+        return reject({
+          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+          message: CONFIG.ERROR_MISSING_VARIANT_NAME,
+        });
+      }
+
+      var [err, variant] = await to(
+        Variant.findOne({
+          where: {
+            id: body.id,
+          },
+        })
+      );
+
+      if (err) {
+        return reject({
+          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+          message: err,
+        });
+      }
+
+      if (!variant) {
+        return reject({
+          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+          message: "variant not found",
+        });
+      }
+
+      var [err, variant] = await to(
+        Variant.update({
+          ...body,
+        })
+      );
+
+      if (err) {
+        return reject({
+          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+          message: err,
+        });
+      }
+
+      if (!variant) {
+        return reject({
+          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+          message: "not added",
+        });
+      }
+
+      return resolve("added successfully");
+    } catch (error) {
+      return reject({
+        statusCode: CONFIG.STATUS_CODE_INTERNAL_SERVER,
+        message: error,
+      });
+    }
+  });
+}
+
+function updateCategory(req, res) {
+  return new Promise(async function (resolve, reject) {
+    try {
+      const body = req.body;
+
+      if (!body.id) {
+        return reject({
+          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+          message: CONFIG.ERROR_MISSING_ID,
+        });
+      }
+
+      var [err, category] = await to(
+        Category.findOne({
+          where: {
+            id: body.id,
+          },
+        })
+      );
+
+      if (err) {
+        return reject({
+          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+          message: err,
+        });
+      }
+
+      if (!category) {
+        return reject({
+          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+          message: "category not found",
+        });
+      }
+
+      [err, category] = await to(
+        category.update({
+          ...body,
+        })
+      );
+
+      if (err) {
+        return reject({
+          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+          message: err,
+        });
+      }
+
+      if (!category) {
+        return reject({
+          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+          message: "error updating",
+        });
+      }
+
+      return resolve("updated successfully");
+    } catch (error) {
+      return reject({
+        statusCode: CONFIG.STATUS_CODE_INTERNAL_SERVER,
+        message: error,
+      });
+    }
+  });
+}
+function updateSubCategory(req, res) {
+  return new Promise(async function (resolve, reject) {
+    try {
+      const body = req.body;
+
+      if (!body.id) {
+        return reject({
+          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+          message: CONFIG.ERROR_MISSING_ID,
+        });
+      }
+
+      var [err, subCategory] = await to(
+        SubCategory.findOne({
+          where: {
+            id: body.id,
+          },
+        })
+      );
+
+      if (err) {
+        return reject({
+          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+          message: err,
+        });
+      }
+
+      if (!subCategory) {
+        return reject({
+          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+          message: "subCategory not found",
+        });
+      }
+
+      [err, subCategory] = await to(
+        subCategory.update({
+          ...body,
+        })
+      );
+
+      if (err) {
+        return reject({
+          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+          message: err,
+        });
+      }
+
+      if (!subCategory) {
+        return reject({
+          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+          message: "error updating",
+        });
+      }
+
+      return resolve("updated successfully");
+    } catch (error) {
+      return reject({
+        statusCode: CONFIG.STATUS_CODE_INTERNAL_SERVER,
+        message: error,
+      });
+    }
+  });
+}
+function updateProductType(req, res) {
+  return new Promise(async function (resolve, reject) {
+    try {
+      const body = req.body;
+
+      if (!body.id) {
+        return reject({
+          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+          message: CONFIG.ERROR_MISSING_ID,
+        });
+      }
+
+      var [err, productType] = await to(
+        ProductType.findOne({
+          where: {
+            id: body.id,
+          },
+        })
+      );
+
+      if (err) {
+        return reject({
+          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+          message: err,
+        });
+      }
+
+      if (!productType) {
+        return reject({
+          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+          message: "productType not found",
+        });
+      }
+
+      var [err, productType] = await to(
+        productType.update({
+          ...body,
+        })
+      );
+
+      if (err) {
+        return reject({
+          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+          message: err,
+        });
+      }
+
+      if (!productType) {
+        return reject({
+          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+          message: "error updating",
+        });
+      }
+
+      return resolve("updated successfully");
     } catch (error) {
       return reject({
         statusCode: CONFIG.STATUS_CODE_INTERNAL_SERVER,

@@ -90,17 +90,27 @@ function Login(req, res) {
         });
       }
       if (!user) {
-        return resolve("not registered");
+        return reject({
+          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+          message: "not registered",
+        });
+      }
+
+      if (user.verified == false) {
+        return reject({
+          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+          message: "not registered",
+        });
       }
 
       // Check if password is correct
       if (!bcrypt.compareSync(body.password, user.password)) {
-        return reject("Incorrect password");
+        return reject({
+          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+          message:"Incorrect password"
+        });
       }
 
-      if (user.verified == false) {
-        return resolve("not registered");
-      }
 
       var token = user.getJWT();
       [err, user] = await to(
@@ -181,7 +191,10 @@ function Register(req, res) {
       }
 
       if (user && user.verified) {
-        return reject("user already registered");
+        return reject({
+          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+          message: "user already registered",
+        });
       }
 
       // Hash the password
@@ -272,7 +285,10 @@ function SendOTP(req, res) {
       }
 
       if (!user) {
-        return reject("user not found");
+        return reject({
+          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+          message: "user not found",
+        });
       }
 
       // Generate a random number between 1000 and 9999
@@ -356,7 +372,10 @@ function verifyRegistration(req, res) {
       }
 
       if (!otp) {
-        return reject("wrong otp");
+        return reject({
+          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+          message: "wrong otp"
+        });
       }
 
       // Get the current server time
@@ -370,7 +389,10 @@ function verifyRegistration(req, res) {
 
       // If the difference is within 5 minutes, consider the OTP as valid
       if (differenceInMinutes > 5) {
-        return reject("otp expired");
+        return reject({
+          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+          message: "otp expired",
+        });
       }
 
       var [errUser, user] = await to(
@@ -392,7 +414,10 @@ function verifyRegistration(req, res) {
         });
       }
       if (!user) {
-        return reject("user not found");
+        return reject({
+          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+          message: "user not found",
+        });
       }
 
       return resolve("profile verified successfully");
@@ -440,7 +465,9 @@ function verifyOTP(req, res) {
       }
 
       if (!otp) {
-        return reject("wrong otp");
+        return reject({
+          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+          message:"wrong otp"});
       }
 
       // Get the current server time
@@ -454,7 +481,9 @@ function verifyOTP(req, res) {
 
       // If the difference is within 5 minutes, consider the OTP as valid
       if (differenceInMinutes > 5) {
-        return reject("otp expired");
+        return reject({
+          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+          message:"otp expired"});
       }
       return resolve("otp verified");
     } catch (error) {
@@ -500,7 +529,9 @@ function resetPassword(req, res) {
       }
 
       if (!user) {
-        return reject("user not registered");
+        return reject({
+          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+          message:"user not registered"});
       }
 
       const hashedPassword = await bcrypt.hash(body.password, 10);

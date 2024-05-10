@@ -29,22 +29,27 @@ router.post("/admin/verifyAccount", AdminAuthController.verifyAccount);
 // admin product 
 router.get("/admin/getProducts", AdminController.getProducts);
 router.post("/admin/addProduct", AdminController.addProduct);
+router.patch("/admin/updateProduct", AdminController.updateProduct);
 
 // admin variant 
 router.get("/admin/getVariant", AdminController.getVariant);
 router.post("/admin/addVariant", AdminController.addVariant);
+router.patch("/admin/updateVariant", AdminController.updateVariant);
 
 // admin category 
 router.get("/admin/getCategory", AdminController.getCategory);
 router.post("/admin/addCategory", AdminController.addCategory);
+router.patch("/admin/updateCategory", AdminController.updateCategory);
 
 // admin product type 
 router.get("/admin/getProductType", AdminController.getProductType);
 router.post("/admin/addProductType", AdminController.addProductType);
+router.patch("/admin/updateProductType", AdminController.updateProductType);
 
 // admin subcategory 
 router.get("/admin/getSubCategory", AdminController.getSubCategory);
 router.post("/admin/addSubCategory", AdminController.addSubCategory);
+router.patch("/admin/updateSubCategory", AdminController.updateSubCategory);
 
 //EXPORT THE ROUTER HERE
 module.exports = router;

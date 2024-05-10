@@ -11,7 +11,12 @@ module.exports = {
   getCategory,
   getSubCategory,
   getProducts,
-  getVariant
+  getVariant,
+  updateProduct,
+  updateVariant,
+  updateCategory,
+  updateProductType,
+  updateSubCategory,
 };
 
 function uploadUserMedia(req, res) {
@@ -151,6 +156,76 @@ function getProducts(req, res) {
 }
 function getVariant(req, res) {
   AdminServices.getVariant(req, res)
+    .then((result) => {
+      return ReS(res, { data: result }, CONFIG.STATUS_CODE_OK);
+    })
+    .catch((error) => {
+      return ReE(
+        res,
+        { message: error.message == undefined ? error : error.message },
+        error.statusCode == undefined ? CONFIG.ERROR_CODE : error.statusCode
+      );
+    });
+}
+
+
+// update apis 
+
+
+function updateProduct(req, res) {
+  AdminServices.updateProduct(req, res)
+    .then((result) => {
+      return ReS(res, { data: result }, CONFIG.STATUS_CODE_OK);
+    })
+    .catch((error) => {
+      return ReE(
+        res,
+        { message: error.message == undefined ? error : error.message },
+        error.statusCode == undefined ? CONFIG.ERROR_CODE : error.statusCode
+      );
+    });
+}
+function updateVariant(req, res) {
+  AdminServices.updateVariant(req, res)
+    .then((result) => {
+      return ReS(res, { data: result }, CONFIG.STATUS_CODE_OK);
+    })
+    .catch((error) => {
+      return ReE(
+        res,
+        { message: error.message == undefined ? error : error.message },
+        error.statusCode == undefined ? CONFIG.ERROR_CODE : error.statusCode
+      );
+    });
+}
+function updateCategory(req, res) {
+  AdminServices.updateCategory(req, res)
+    .then((result) => {
+      return ReS(res, { data: result }, CONFIG.STATUS_CODE_OK);
+    })
+    .catch((error) => {
+      return ReE(
+        res,
+        { message: error.message == undefined ? error : error.message },
+        error.statusCode == undefined ? CONFIG.ERROR_CODE : error.statusCode
+      );
+    });
+}
+function updateProductType(req, res) {
+  AdminServices.updateProductType(req, res)
+    .then((result) => {
+      return ReS(res, { data: result }, CONFIG.STATUS_CODE_OK);
+    })
+    .catch((error) => {
+      return ReE(
+        res,
+        { message: error.message == undefined ? error : error.message },
+        error.statusCode == undefined ? CONFIG.ERROR_CODE : error.statusCode
+      );
+    });
+}
+function updateSubCategory(req, res) {
+  AdminServices.updateSubCategory(req, res)
     .then((result) => {
       return ReS(res, { data: result }, CONFIG.STATUS_CODE_OK);
     })
