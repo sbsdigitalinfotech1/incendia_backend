@@ -185,8 +185,8 @@ function addVariant(req, res) {
           var [errMedia, media] = await to(
             uploadFile.uploadOnServer(
               req.files.images,
-              `/user`,
-              `${body.productId}-${body.name}-${body.color}-${body.size}-${removeFileExtantion(req.files.images.name)}`
+              `/admin/variants`,
+              `${body.productId}-${body.name}-${removeFileExtantion(req.files.images.name)}`
             )
           );
           if (errMedia) {
@@ -204,10 +204,8 @@ function addVariant(req, res) {
             let [errMedia, media] = await to(
               uploadFile.uploadOnServer(
                 image,
-                `/user`,
-                `${body.productId}-${body.name}-${body.color}-${
-                  body.size
-                }-${removeFileExtantion(image.name)}`
+                `/admin/variants`,
+                `${body.productId}-${body.name}-${removeFileExtantion(image.name)}`
               )
             );
             if (errMedia) {

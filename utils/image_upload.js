@@ -12,12 +12,18 @@ const uploadOnServer = (file, key, fileName) => {
         path.join(path.resolve(__dirname, ".."), "uploads") + `${extendedPath}`;
       const fileExtension = path.extname(file.name);
 
+      var i=0;
+      while(fs.existsSync(path.join(UPLOADS_PATH, fileName + fileExtension))) {
+        fileName = fileName+i;
+        i++;
+      }
+
       if (!fs.existsSync(UPLOADS_PATH)) {
         // If it doesn't exist, create it
         fs.mkdirSync(UPLOADS_PATH);
         console.log("Uploads directory created successfully.");
       }
-      file.mv(path.join(UPLOADS_PATH, encodeURIComponent(fileName) + fileExtension), (err) => {
+      file.mv(path.join(UPLOADS_PATH, fileName + fileExtension), (err) => {
         if (err) {
           return reject(err);
         }
