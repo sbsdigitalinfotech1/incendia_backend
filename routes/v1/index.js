@@ -32,7 +32,7 @@ router.post("/admin/addProduct", AdminController.addProduct);
 router.patch("/admin/updateProduct", AdminController.updateProduct);
 
 // admin variant 
-router.get("/admin/getVariant", AdminController.getVariant);
+router.get("/admin/getVariants", AdminController.getVariant);
 router.post("/admin/addVariant", AdminController.addVariant);
 router.patch("/admin/updateVariant", AdminController.updateVariant);
 

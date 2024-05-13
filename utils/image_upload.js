@@ -17,11 +17,11 @@ const uploadOnServer = (file, key, fileName) => {
         fs.mkdirSync(UPLOADS_PATH);
         console.log("Uploads directory created successfully.");
       }
-      file.mv(path.join(UPLOADS_PATH, fileName + fileExtension), (err) => {
+      file.mv(path.join(UPLOADS_PATH, encodeURIComponent(fileName) + fileExtension), (err) => {
         if (err) {
           return reject(err);
         }
-        return resolve({ url: `uploads${key}/${file.name}`, msg: "File uploaded!" });
+        return resolve({ url: `uploads${key}/${encodeURIComponent(fileName)+fileExtension}`, msg: "File uploaded!" });
       });
     } catch (err) {
       return reject(err);

@@ -174,12 +174,76 @@ function addVariant(req, res) {
           message: CONFIG.ERROR_MISSING_STOCK,
         });
       }
+      const photosArr = [];
+      if (req.files) {
+        const removeFileExtantion = (fileName) => {
+          const parts = fileName.split(".");
+          parts.pop();
+          return parts.join(".");
+        };
+        if (req.files.images && !req.files.images.length) {
+          var [errMedia, media] = await to(
+            uploadFile.uploadOnServer(
+              req.files.images,
+              `/user`,
+              `${body.productId}-${body.name}-${body.color}-${body.size}-${removeFileExtantion(req.files.images.name)}`
+            )
+          );
+          if (errMedia) {
+            return reject({
+              statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+              message: err,
+            });
+          }
+          if (media) {
+            photosArr.push(media.url);
+          }
+        } else {
+
+          req.files.images.forEach(async (image) => {
+            let [errMedia, media] = await to(
+              uploadFile.uploadOnServer(
+                image,
+                `/user`,
+                `${body.productId}-${body.name}-${body.color}-${
+                  body.size
+                }-${removeFileExtantion(image.name)}`
+              )
+            );
+            if (errMedia) {
+              return reject({
+                statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+                message: err,
+              });
+            }
+            if (media) {
+              photos.push(media.url);
+            }
+          });
+        }
+      }
 
       var [err, variant] = await to(
         Variant.create({
           ...body,
         })
       );
+
+      photosArr.forEach(async (element) => {
+        var [errPhotos, photos] = await to(
+          ProductPhotos.create({
+            url: element,
+            variantId: variant.id,
+            productId: body.productId,
+          })
+        );
+        if (errPhotos) {
+          return reject({
+            statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+            message: err,
+          });
+        }
+      });
 
       if (err) {
         return reject({

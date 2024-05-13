@@ -30,28 +30,10 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: false,
     },
     productHighlight: {
-      type: DataTypes.TEXT, // Use TEXT data type
-      defaultValue: "{}", // Default value as stringified JSON object
-      get: function () {
-        // Parse JSON string to object
-        return JSON.parse(this.getDataValue("productHighlight"));
-      },
-      set: function (val) {
-        // Stringify object to JSON string
-        this.setDataValue("productHighlight", JSON.stringify(val));
-      },
+      type: DataTypes.STRING,
     },
     productsDescription: {
-      type: DataTypes.TEXT, // Use TEXT data type
-      defaultValue: "{}", // Default value as stringified JSON object
-      get: function () {
-        // Parse JSON string to object
-        return JSON.parse(this.getDataValue("productsDescription"));
-      },
-      set: function (val) {
-        // Stringify object to JSON string
-        this.setDataValue("productsDescription", JSON.stringify(val));
-      },
+      type: DataTypes.STRING,
     },
     productId: {
       type: DataTypes.BIGINT,
