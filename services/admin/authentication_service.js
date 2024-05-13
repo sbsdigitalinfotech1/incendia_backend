@@ -4,7 +4,7 @@ const bcrypt = require("bcrypt");
 module.exports = {
   Login,
   Register,
-  verifyAccount
+  verifyAccount,
 };
 
 function Login(req, res) {
@@ -27,7 +27,7 @@ function Login(req, res) {
 
       var [err, user] = await to(
         User.findOne({
-          where: { email: body.email,userType:CONFIG.USER_TYP_ADMIN },
+          where: { email: body.email, userType: CONFIG.USER_TYP_ADMIN },
         })
       );
 
@@ -38,16 +38,25 @@ function Login(req, res) {
         });
       }
       if (!user) {
-        return resolve("not registered");
+        return reject({
+          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+          message: "not registered",
+        });
       }
 
       // Check if password is correct
       if (!bcrypt.compareSync(body.password, user.password)) {
-        return reject("Incorrect password");
+        return reject({
+          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+          message: "Incorrect password",
+        });
       }
 
       if (user.verified == false) {
-        return resolve("not verified");
+        return reject({
+          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+          message: "not verified",
+        });
       }
 
       var token = user.getJWT();
@@ -71,7 +80,16 @@ function Login(req, res) {
           }
         )
       );
-      return resolve(user);
+      return resolve({
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        id: user.id,
+        phone: user.phone,
+        userType: user.userType,
+        token: user.token,
+        verified: user.verified,
+      });
     } catch (error) {
       return reject({
         statusCode: CONFIG.STATUS_CODE_INTERNAL_SERVER,
@@ -80,7 +98,6 @@ function Login(req, res) {
     }
   });
 }
-
 
 function Register(req, res) {
   return new Promise(async function (resolve, reject) {
@@ -171,7 +188,7 @@ function Register(req, res) {
           lastName: body.lastName,
           firstName: body.firstName,
           password: hashedPassword,
-          userType: CONFIG.USER_TYP_ADMIN
+          userType: CONFIG.USER_TYP_ADMIN,
         })
       );
 
@@ -198,7 +215,6 @@ function Register(req, res) {
   });
 }
 
-
 function verifyAccount(req, res) {
   return new Promise(async function (resolve, reject) {
     try {
@@ -217,7 +233,6 @@ function verifyAccount(req, res) {
         });
       }
 
-      
       var [errUser, user] = await to(
         User.update(
           { verified: body.verify },

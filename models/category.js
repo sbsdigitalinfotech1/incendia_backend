@@ -8,18 +8,26 @@ module.exports = (sequelize, DataTypes) => {
     },
     name: {
       type: DataTypes.STRING,
-      unique: true,
     },
     productTypeId: {
       type: DataTypes.BIGINT,
     },
+    status: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: CONFIG.ACTIVE_RECORD,
+    },
   });
   Category.associate = function (models) {
     Category.belongsTo(models.productType, {
-        foreignKey: "productTypeId",
-        onDelete: "cascade",
-      });
+      foreignKey: "productTypeId",
+      onDelete: "cascade",
+    });
+    Category.hasMany(models.subCategory, {
+      foreignKey: "categoryId",
+      as:"subCategories",
+      onDelete: "cascade",
+    });
   };
-  
+
   return Category;
 };

@@ -50,23 +50,24 @@ module.exports = (sequelize, DataTypes) => {
         },
       },
     },
-    userType: { type: DataTypes.INTEGER,defaultValue:CONFIG.USER_TYPE_USER },
+    userType: { type: DataTypes.INTEGER, defaultValue: CONFIG.USER_TYPE_USER },
     token: { type: DataTypes.STRING, defaultValue: "" },
     status: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.BOOLEAN,
       defaultValue: CONFIG.ACTIVE_RECORD,
     },
     verified: {
       type: DataTypes.BOOLEAN,
       defaultValue: CONFIG.UNVERIFIED,
     },
-    guestId:{
-        type: DataTypes.STRING,
-        default:""
+    guestId: {
+      type: DataTypes.STRING,
+      default: "",
     },
-    password:{
-        type: DataTypes.STRING, defaultValue:""
-    }
+    password: {
+      type: DataTypes.STRING,
+      defaultValue: "",
+    },
   });
   User.associate = function (models) {};
   User.prototype.getJWT = function () {

@@ -7,9 +7,9 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.BIGINT,
         autoIncrement: true,
       },
-      otp: {type: DataTypes.STRING,defaultValue:''},
+      otp: {type: DataTypes.STRING},
       otpType: { type: DataTypes.INTEGER, defaultValue: 1 }, //1.Phone
-      email: { type: DataTypes.STRING, defaultValue: "" },
+      email: { type: DataTypes.STRING },
     },
     {
       indexes: [
