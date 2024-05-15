@@ -1,6 +1,6 @@
 
 module.exports = (sequelize, DataTypes) => {
-    var Guest = sequelize.define("cart", {
+    var Cart = sequelize.define("cart", {
       id: {
         primaryKey: true,
         type: DataTypes.BIGINT,
@@ -8,11 +8,29 @@ module.exports = (sequelize, DataTypes) => {
       },
       guestId: {
         type: DataTypes.STRING,
-        defaultValue: "",
+      },
+      variantId:{
+        type: DataTypes.BIGINT,
+      },
+      qty:{
+        type: DataTypes.BIGINT,
+        defaultValue: 1
+      },
+      discountCoupanId:{
+        type: DataTypes.BIGINT,
       }
     });
-    Guest.associate = function (models) {};
+    Cart.associate = function (models) {
+      Cart.belongsTo(models.variant, {
+        foreignKey: "variantId",
+        onDelete: "cascade",
+      });
+      Cart.belongsTo(models.guest, {
+        foreignKey: "guestId",
+        onDelete: "cascade",
+      });
+    };
    
-    return Guest;
+    return Cart;
   };
   

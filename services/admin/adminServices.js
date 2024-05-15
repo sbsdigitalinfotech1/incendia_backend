@@ -7,6 +7,8 @@ const ProductType = require("../../models").productType;
 const SubCategory = require("../../models").subCategory;
 const ProductPhotos = require("../../models").productPhotos;
 const uploadFile = require("../../utils/image_upload");
+const path = require("path");
+const fs = require("fs");
 
 module.exports = {
   uploadUserMedia,
@@ -174,19 +176,40 @@ function addVariant(req, res) {
           message: CONFIG.ERROR_MISSING_STOCK,
         });
       }
+      if (!req.files.main) {
+        return reject({
+          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+          message: CONFIG.ERROR_MISSING_MAIN_IMAGE,
+        });
+      }
+      var main = "";
       const photosArr = [];
       if (req.files) {
-        const removeFileExtantion = (fileName) => {
-          const parts = fileName.split(".");
-          parts.pop();
-          return parts.join(".");
-        };
+        if (req.files.main) {
+          var [errMedia, media] = await to(
+            uploadFile.uploadOnServer(
+              req.files.main,
+              `/admin/variants`,
+              `${body.productId}-${body.name}-${req.files.main.name}`
+            )
+          );
+          if (errMedia) {
+            return reject({
+              statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+              message: err,
+            });
+          }
+          if (media) {
+            main = media.url;
+          }
+        }
+
         if (req.files.images && !req.files.images.length) {
           var [errMedia, media] = await to(
             uploadFile.uploadOnServer(
               req.files.images,
               `/admin/variants`,
-              `${body.productId}-${body.name}-${removeFileExtantion(req.files.images.name)}`
+              `${body.productId}-${body.name}-${req.files.images.name}`
             )
           );
           if (errMedia) {
@@ -199,13 +222,12 @@ function addVariant(req, res) {
             photosArr.push(media.url);
           }
         } else {
-
           req.files.images.forEach(async (image) => {
-            let [errMedia, media] = await to(
+            var [errMedia, media] = await to(
               uploadFile.uploadOnServer(
                 image,
                 `/admin/variants`,
-                `${body.productId}-${body.name}-${removeFileExtantion(image.name)}`
+                `${body.productId}-${body.name}-${image.name}`
               )
             );
             if (errMedia) {
@@ -215,7 +237,7 @@ function addVariant(req, res) {
               });
             }
             if (media) {
-              photos.push(media.url);
+              photosArr.push(media.url);
             }
           });
         }
@@ -226,22 +248,6 @@ function addVariant(req, res) {
           ...body,
         })
       );
-
-      photosArr.forEach(async (element) => {
-        var [errPhotos, photos] = await to(
-          ProductPhotos.create({
-            url: element,
-            variantId: variant.id,
-            productId: body.productId,
-          })
-        );
-        if (errPhotos) {
-          return reject({
-            statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
-            message: err,
-          });
-        }
-      });
 
       if (err) {
         return reject({
@@ -254,6 +260,38 @@ function addVariant(req, res) {
         return reject({
           statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
           message: "not added",
+        });
+      }
+
+      photosArr.forEach(async (element) => {
+        var [errPhotos, photos] = await to(
+          ProductPhotos.create({
+            url: element,
+            variantId: variant.id,
+            productId: body.productId,
+            main: false,
+          })
+        );
+        if (errPhotos) {
+          return reject({
+            statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+            message: err,
+          });
+        }
+      });
+
+      var [errPhotos, photos] = await to(
+        ProductPhotos.create({
+          url: main,
+          variantId: variant.id,
+          productId: body.productId,
+          main: CONFIG.ACTIVE_RECORD,
+        })
+      );
+      if (errPhotos) {
+        return reject({
+          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+          message: err,
         });
       }
 
@@ -634,8 +672,8 @@ function getProducts(req, res) {
       const body = req.query;
       var whereCluse = {};
       whereCluse[Op.and] = [];
-      const page = body.page ?? 1;
-      const limit = body.pageSize ?? 10;
+      const page = parseInt(body.page) ?? 1;
+      const limit = parseInt(body.pageSize) ?? 10;
       const offset = (page - 1) * limit;
 
       if (body.id && body.id !== "undefined") {
@@ -736,8 +774,8 @@ function getVariant(req, res) {
       const body = req.query;
       var whereCluse = {};
       whereCluse[Op.and] = [];
-      const page = body.page ?? 1;
-      const limit = body.pageSize ?? 10;
+      const page = parseInt(body.page) ?? 1;
+      const limit = parseInt(body.pageSize) ?? 10;
       const offset = (page - 1) * limit;
 
       if (body.id && body.id !== "undefined") {
@@ -901,7 +939,7 @@ function updateVariant(req, res) {
       if (!body.id) {
         return reject({
           statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
-          message: CONFIG.ERROR_MISSING_VARIANT_NAME,
+          message: CONFIG.ERROR_MISSING_ID,
         });
       }
 
@@ -926,28 +964,142 @@ function updateVariant(req, res) {
           message: "variant not found",
         });
       }
+      var removedUrls = [];
+      if (typeof body?.removedUrls == "string") {
+        removedUrls.push(body.removedUrls);
+      } else if (typeof body?.removedUrls == "object") {
+        removedUrls = [...body.removedUrls];
+      }
+      if (removedUrls?.length) {
+        const deleteResult = await ProductPhotos.destroy({
+          where: {
+            url: {
+              [Op.in]: removedUrls,
+            },
+          },
+        });
+        for(const url of removedUrls) {
+          // Remove the file from the local file system based on the URL
+          const decodedUrl = decodeURIComponent(url); // Decode the URL
 
-      var [err, variant] = await to(
-        Variant.update({
-          ...body,
+          try {
+            const extendedPath = decodedUrl.replace(/\//g, "\\\\");
+            const UPLOADS_PATH =
+              path.resolve(__dirname, "..", "..") +'\\\\'+ `${extendedPath}`;
+            fs.unlinkSync(UPLOADS_PATH); // Remove the file synchronously
+          } catch (err) {
+            console.error(`Error removing file ${UPLOADS_PATH}:`, err);
+          }
+        };
+      }
+
+      var main = "";
+      const photosArr = [];
+      if (req.files) {
+        if (req.files.main) {
+          var [errMedia, media] = await to(
+            uploadFile.uploadOnServer(
+              req.files.main,
+              `/admin/variants`,
+              `${variant.productId}-${variant.name}-${req.files.main.name}`
+            )
+          );
+          if (errMedia) {
+            return reject({
+              statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+              message: err,
+            });
+          }
+          if (media) {
+            main = media.url;
+          }
+        }
+
+        if (req.files.images && !req.files.images.length) {
+          var [errMedia, media] = await to(
+            uploadFile.uploadOnServer(
+              req.files.images,
+              `/admin/variants`,
+              `${variant.productId}-${variant.name}-${req.files.images.name}`
+            )
+          );
+          if (errMedia) {
+            return reject({
+              statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+              message: err,
+            });
+          }
+          if (media) {
+            photosArr.push(media.url);
+          }
+        } else {
+          for(const image of req.files.images) {
+            var [errMedia, media] = await to(
+              uploadFile.uploadOnServer(
+                image,
+                `/admin/variants`,
+                `${variant.productId}-${variant.name}-${image.name}`
+              )
+            );
+            if (errMedia) {
+              return reject({
+                statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+                message: err,
+              });
+            }
+            if (media) {
+              photosArr.push(media.url);
+            }
+          };
+        }
+      }
+
+      for(const element of photosArr) {
+        var [errPhotos, photos] = await to(
+          ProductPhotos.create({
+            url: element,
+            variantId: body.id,
+            productId: variant.productId,
+            main: false,
+          })
+        );
+        if (errPhotos) {
+          return reject({
+            statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+            message: err,
+          });
+        }
+      };
+
+      var [errPhotos, photos] = await to(
+        ProductPhotos.create({
+          url: main,
+          variantId: body.id,
+          productId: variant.productId,
+          main: true,
         })
       );
-
-      if (err) {
+      if (errPhotos) {
         return reject({
           statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
           message: err,
         });
       }
 
+      [err, variant] = await to(variant.update(body));
+      if (err) {
+        return reject({
+          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+          message: err,
+        });
+      }
       if (!variant) {
         return reject({
           statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
-          message: "not added",
+          message: err,
         });
       }
-
-      return resolve("added successfully");
+      return resolve("updated successfully");
     } catch (error) {
       return reject({
         statusCode: CONFIG.STATUS_CODE_INTERNAL_SERVER,

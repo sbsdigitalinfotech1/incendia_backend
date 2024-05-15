@@ -1,6 +1,8 @@
 var express = require("express");
 var router = express.Router();
 const UserAuthController = require("../../controllers/user/authenticationController");
+const UserProfileController = require("../../controllers/user/profileController");
+const UserProductController = require("../../controllers/user/productController");
 const UserController = require("../../controllers/user/userController");
 const AdminAuthController = require("../../controllers/admin/authenticationController");
 const AdminController = require("../../controllers/admin/adminController");
@@ -18,6 +20,25 @@ router.post("/user/sendOTP", UserAuthController.SendOTP);
 router.post("/user/verifyRegistration", UserAuthController.verifyRegistration);
 router.post("/user/verifyOTP", UserAuthController.verifyOTP);
 router.post("/user/resetPassword", UserAuthController.resetPassword);
+
+
+// user profiles 
+
+// user address 
+
+router.get("/user/getAddress", UserProfileController.getAddress);
+router.post("/user/addProduct", UserProfileController.addAddress);
+router.patch("/user/updateProduct", UserProfileController.updateAddress);
+
+// user favourite 
+
+router.get("/user/getFavourite", UserProfileController.getFavourite);
+router.patch("/user/updateFavourite", UserProfileController.updateFavourite);
+
+// user products 
+
+router.get("/user/getProducts", UserProductController.getProducts);
+
 
 // admin api's
 

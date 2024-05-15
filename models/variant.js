@@ -13,27 +13,32 @@ module.exports = (sequelize, DataTypes) => {
     color: {
       type: DataTypes.STRING,
     },
+    colorName: {
+      type: DataTypes.STRING,
+    },
     size: {
       type: DataTypes.STRING,
     },
     price: {
       type: DataTypes.STRING,
+      defaultValue:'0'
     },
     mrp: {
       type: DataTypes.STRING,
+      defaultValue:'0'
     },
     offerPrice: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING
     },
     codAvailable: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
     },
     productHighlight: {
-      type: DataTypes.STRING,
+      type: DataTypes.TEXT,
     },
     productsDescription: {
-      type: DataTypes.STRING,
+      type: DataTypes.TEXT,
     },
     productId: {
       type: DataTypes.BIGINT,

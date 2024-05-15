@@ -27,6 +27,9 @@ CONFIG.ACTIVE_RECORD = 1;
 CONFIG.ERR_INTERNAL_SERVER_ERROR = 'Internal server error'
 CONFIG.ERROR_MISSING_FIRST_NAME = 'Please provide firstName';
 CONFIG.ERROR_MISSING_LAST_NAME = 'Please provide lastName';
+CONFIG.ERROR_MISSING_GUEST_ID = 'Please provide guest Id';
+CONFIG.ERROR_MISSING_USER_ID = 'Please provide user Id';
+CONFIG.ERROR_MISSING_VARIANT_ID = 'Please provide variant Id';
 CONFIG.ERROR_MISSING_PHONE = 'Please provide phoneNo';
 CONFIG.ERROR_MISSING_ID = 'Please provide ID';
 CONFIG.ERROR_MISSING_EMAIL = 'Please provide email';
@@ -41,6 +44,7 @@ CONFIG.ERROR_MISSING_COLOR = 'Please provide color';
 CONFIG.ERROR_MISSING_SIZE = 'Please provide size';
 CONFIG.ERROR_MISSING_PRICE = 'Please provide price';
 CONFIG.ERROR_MISSING_STOCK = 'Please provide stock';
+CONFIG.ERROR_MISSING_MAIN_IMAGE = 'Please provide main image';
 CONFIG.ERROR_MISSING_MRP = 'Please provide mrp';
 CONFIG.ERROR_MISSING_PRODUCT_HIGHLIGHTS = 'Please provide product highlights';
 CONFIG.ERROR_MISSING_PRODUCT_DESCRIPTION = 'Please provide product description';
@@ -51,6 +55,11 @@ CONFIG.ERROR_MISSING_PRODUCT_CATEGORY = 'Please provide product category';
 CONFIG.ERROR_MISSING_PRODUCT_CATEGORY_ID = 'Please provide product category id';
 CONFIG.ERROR_MISSING_PRODUCT_SUBCATEGORY = 'Please provide product subcategory';
 CONFIG.ERROR_MISSING_PRODUCT_SUBCATEGORY_ID = 'Please provide product subcategory id';
+CONFIG.ERROR_MISSING_AREA_PINCODE = 'Please provide area pincode';
+CONFIG.ERROR_MISSING_ADDRESS_LINE_2 = 'Please provide village/town';
+CONFIG.ERROR_MISSING_ADDRESS_LINE_1 = 'Please provide address';
+CONFIG.ERROR_MISSING_CITY = 'Please provide city';
+CONFIG.ERROR_MISSING_STATE = 'Please provide state';
 
 
 // user types 

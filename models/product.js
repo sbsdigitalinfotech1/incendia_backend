@@ -20,13 +20,13 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.BIGINT,
     },
     productHighlight: {
-      type: DataTypes.STRING,
+      type: DataTypes.TEXT,
     },
     productsDescription: {
-      type: DataTypes.STRING,
+      type: DataTypes.TEXT,
     },
     otherDescription: {
-      type: DataTypes.STRING,
+      type: DataTypes.TEXT,
     },
     // productHighlight: {
     //   type: DataTypes.TEXT, // Use TEXT data type
