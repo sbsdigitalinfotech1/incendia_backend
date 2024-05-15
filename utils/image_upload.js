@@ -10,10 +10,13 @@ const uploadOnServer = (file, key, fileName) => {
       const extendedPath = key.replace(/\//g, "\\\\");
       const UPLOADS_PATH =
         path.join(path.resolve(__dirname, ".."), "uploads") + `${extendedPath}`;
-      const fileExtension = path.extname(file.name);
+      const fileExtension = path.extname(fileName)?'':path.extname(file.name);
 
       var i=0;
       while(fs.existsSync(path.join(UPLOADS_PATH, fileName + fileExtension))) {
+        const parts = fileName.split(".");
+        parts.pop();
+        fileName= parts.join(".")
         fileName = fileName+i;
         i++;
       }

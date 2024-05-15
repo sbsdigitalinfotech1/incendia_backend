@@ -19,6 +19,10 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.BOOLEAN,
       defaultValue: CONFIG.ACTIVE_RECORD,
     },
+    main:{
+      type: DataTypes.BOOLEAN,
+      defaultValue: false
+    }
   });
   ProductPhotos.associate = function (models) {
     ProductPhotos.belongsTo(models.product, {

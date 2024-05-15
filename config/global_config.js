@@ -41,6 +41,7 @@ CONFIG.ERROR_MISSING_COLOR = 'Please provide color';
 CONFIG.ERROR_MISSING_SIZE = 'Please provide size';
 CONFIG.ERROR_MISSING_PRICE = 'Please provide price';
 CONFIG.ERROR_MISSING_STOCK = 'Please provide stock';
+CONFIG.ERROR_MISSING_MAIN_IMAGE = 'Please provide main image';
 CONFIG.ERROR_MISSING_MRP = 'Please provide mrp';
 CONFIG.ERROR_MISSING_PRODUCT_HIGHLIGHTS = 'Please provide product highlights';
 CONFIG.ERROR_MISSING_PRODUCT_DESCRIPTION = 'Please provide product description';

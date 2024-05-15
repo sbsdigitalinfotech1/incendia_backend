@@ -13,6 +13,9 @@ module.exports = (sequelize, DataTypes) => {
     color: {
       type: DataTypes.STRING,
     },
+    colorName: {
+      type: DataTypes.STRING,
+    },
     size: {
       type: DataTypes.STRING,
     },
@@ -30,10 +33,10 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: false,
     },
     productHighlight: {
-      type: DataTypes.STRING,
+      type: DataTypes.TEXT,
     },
     productsDescription: {
-      type: DataTypes.STRING,
+      type: DataTypes.TEXT,
     },
     productId: {
       type: DataTypes.BIGINT,
