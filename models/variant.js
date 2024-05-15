@@ -21,12 +21,14 @@ module.exports = (sequelize, DataTypes) => {
     },
     price: {
       type: DataTypes.STRING,
+      defaultValue:'0'
     },
     mrp: {
       type: DataTypes.STRING,
+      defaultValue:'0'
     },
     offerPrice: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING
     },
     codAvailable: {
       type: DataTypes.BOOLEAN,

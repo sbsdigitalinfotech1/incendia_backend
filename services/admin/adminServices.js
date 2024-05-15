@@ -672,8 +672,8 @@ function getProducts(req, res) {
       const body = req.query;
       var whereCluse = {};
       whereCluse[Op.and] = [];
-      const page = body.page ?? 1;
-      const limit = body.pageSize ?? 10;
+      const page = parseInt(body.page) ?? 1;
+      const limit = parseInt(body.pageSize) ?? 10;
       const offset = (page - 1) * limit;
 
       if (body.id && body.id !== "undefined") {
@@ -774,8 +774,8 @@ function getVariant(req, res) {
       const body = req.query;
       var whereCluse = {};
       whereCluse[Op.and] = [];
-      const page = body.page ?? 1;
-      const limit = body.pageSize ?? 10;
+      const page = parseInt(body.page) ?? 1;
+      const limit = parseInt(body.pageSize) ?? 10;
       const offset = (page - 1) * limit;
 
       if (body.id && body.id !== "undefined") {
