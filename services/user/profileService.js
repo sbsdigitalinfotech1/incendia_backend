@@ -155,7 +155,7 @@ function addAddress(req, res) {
       if (!body.userId) {
         return reject({
           statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
-          message: CONFIG.ERROR_MISSING_GUEST_ID,
+          message: CONFIG.ERROR_MISSING_ID,
         });
       }
       if (!body.firstName) {
