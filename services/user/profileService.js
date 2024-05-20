@@ -109,6 +109,9 @@ function getFavourite(req, res) {
                   model: ProductPhotos,
                   as: "productPhotos",
                   required: true,
+                  where: {
+                    main: true
+                  }
                 },
                 {
                   model: Product,
@@ -279,8 +282,37 @@ function updateAddress(req, res) {
         });
       }
 
+      if (body.active) {
+        var [erra, addressa] = await to(
+          Address.update(
+            {
+              active: false,
+            },
+            {
+              where: {
+                [Op.not]: { id: body.id },
+                userId: body.userId,
+              },
+            }
+          )
+        );
+        if (erra) {
+          return reject({
+            statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+            message: err,
+          });
+        }
+
+        if (!addressa) {
+          return reject({
+            statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+            message: "error updating",
+          });
+        }
+      }
+
       [err, address] = await to(
-        Address.update({
+        address.update({
           ...body,
         })
       );

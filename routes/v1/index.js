@@ -28,7 +28,7 @@ router.post("/user/resetPassword", UserAuthController.resetPassword);
 
 router.get("/user/getAddress", UserProfileController.getAddress);
 router.post("/user/addAddress", UserProfileController.addAddress);
-router.patch("/user/updateProduct", UserProfileController.updateAddress);
+router.patch("/user/updateAddress", UserProfileController.updateAddress);
 
 // user favourite 
 
