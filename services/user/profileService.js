@@ -52,7 +52,7 @@ function getAddress(req, res) {
           where: whereCluse,
           limit: limit,
           offset: offset,
-          order: [["createdAt", "DESC"]],
+          order: [["active", "DESC"]],
         })
       );
 
@@ -110,8 +110,8 @@ function getFavourite(req, res) {
                   as: "productPhotos",
                   required: true,
                   where: {
-                    main: true
-                  }
+                    main: true,
+                  },
                 },
                 {
                   model: Product,
@@ -291,7 +291,8 @@ function updateAddress(req, res) {
             {
               where: {
                 [Op.not]: { id: body.id },
-                userId: body.userId,
+                userId: address.userId,
+                active: true
               },
             }
           )
@@ -309,11 +310,12 @@ function updateAddress(req, res) {
             message: "error updating",
           });
         }
+        body.active = true
       }
 
       [err, address] = await to(
         address.update({
-          ...body,
+          ...body
         })
       );
 
@@ -351,95 +353,39 @@ function updateFavourite(req, res) {
           message: CONFIG.ERROR_MISSING_USER_ID,
         });
       }
-      var err, favourite;
-
-      if (body.id && body.userId) {
-        [err, favourite] = await to(
-          Favourite.findOne({
-            where: {
-              id: body.id,
-              userId: body.userId,
-            },
-          })
-        );
-
-        if (err) {
-          return reject({
-            statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
-            message: err,
-          });
-        }
-
-        if (!favourite) {
-          return reject({
-            statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
-            message: "no data found",
-          });
-        }
-
-        [err, favourite] = await to(favourite.destroy());
-
-        if (err) {
-          return reject({
-            statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
-            message: err,
-          });
-        }
-
-        if (!favourite) {
-          return reject({
-            statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
-            message: "error removing",
-          });
-        }
-
-        return resolve("removed successfully");
-      }
-
       if (!body.id) {
-        if (!body.variantId) {
-          return reject({
-            statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
-            message: CONFIG.ERROR_MISSING_VARIANT_ID,
-          });
-        }
-        [err, favourite] = await to(
-          Favourite.findOne({
-            where: {
-              userId: body.userId,
-              variantId: body.variantId,
-            },
-          })
-        );
-
-        if (favourite) {
-          return reject({
-            statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
-            message: "Already added",
-          });
-        }
-        [err, favourite] = await to(
-          Favourite.create({
-            ...body,
-          })
-        );
-
-        if (err) {
-          return reject({
-            statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
-            message: err,
-          });
-        }
-
-        if (!favourite) {
-          return reject({
-            statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
-            message: "error adding",
-          });
-        }
-
-        return resolve("added successfully");
+        return reject({
+          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+          message: CONFIG.ERROR_MISSING_VARIANT_ID,
+        });
       }
+
+      var [err, favourite] = await to(
+        Favourite.findOne({
+          where: {
+            variantId: body.id,
+            userId: body.userId,
+          },
+        })
+      );
+
+      if (err) {
+        return reject({
+          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+          message: err,
+        });
+      }
+      if (!favourite) {
+        await to(
+          Favourite.create({ variantId: body.id, userId: body.userId })
+        );
+        return resolve("Added");
+      }
+      if (favourite) {
+        await to(favourite.destroy());
+        return resolve("Removed");
+      }
+
     } catch (error) {
       return reject({
         statusCode: CONFIG.STATUS_CODE_INTERNAL_SERVER,
