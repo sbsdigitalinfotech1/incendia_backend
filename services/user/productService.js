@@ -14,7 +14,7 @@ const path = require("path");
 const fs = require("fs");
 
 module.exports = {
-    getProducts,
+  getProducts,
 };
 
 // get api's
@@ -42,16 +42,34 @@ function getProducts(req, res) {
           limit: limit,
           offset: offset,
           order: [["createdAt", "DESC"]],
-          include:[
+          include: [
             {
-                model: Product,
-                as: 'product',
-                where:{
-                    active: CONFIG.ACTIVE_RECORD
+              model: Product,
+              as: "product",
+              where: {
+                active: CONFIG.ACTIVE_RECORD,
+              },
+              required: true,
+              include: [
+                {
+                  model: Category,
+                  as: "category",
+                  where: {
+                    status: CONFIG.ACTIVE_RECORD,
+                  },
+                  required: true,
                 },
-                required: true
-            }
-          ]
+              ],
+            },
+            {
+              model: ProductPhotos,
+              as: "productPhotos",
+              where: {
+                status: CONFIG.ACTIVE_RECORD,
+              },
+              required: true,
+            },
+          ],
         })
       );
 
@@ -67,6 +85,31 @@ function getProducts(req, res) {
           statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
           message: CONFIG.MESS_INTERNAL_SERVER_ERROR,
         });
+      }
+
+      if (body.id && body.id !== "undefined") {
+        if (variant.rows[0].productId) {
+          var [errColors, colors] = await to(
+            Variant.findAndCountAll({
+              where: {
+                productId: variant.rows[0].productId,
+              },
+              order: [["createdAt", "DESC"]],
+              attributes: ["color", "id"],
+            })
+          );
+          var [errSizes, sizes] = await to(
+            Variant.findAndCountAll({
+              where: {
+                productId: variant.rows[0].productId,
+              },
+              order: [["createdAt", "DESC"]],
+              attributes: ["size", "id"],
+            })
+          );
+          variant.rows[0].dataValues.availableColors = colors;
+          variant.rows[0].dataValues.availableSizes = sizes;
+        }
       }
 
       return resolve(variant);
