@@ -36,6 +36,17 @@ function getProducts(req, res) {
       whereCluse[Op.and].push({ active: CONFIG.ACTIVE_RECORD });
       whereCluse[Op.and].push({ status: CONFIG.ACTIVE_RECORD });
 
+
+      whereCluse[Op.and].push({
+        id: {
+          [Op.in]: Sequelize.literal(`(
+        SELECT MAX(id) 
+        FROM Variants 
+        GROUP BY color
+      )`),
+        },
+      });
+
       var [err, variant] = await to(
         Variant.findAndCountAll({
           where: whereCluse,
@@ -68,6 +79,8 @@ function getProducts(req, res) {
                 status: CONFIG.ACTIVE_RECORD,
               },
               required: true,
+              separate: true,
+              order: [["createdAt", "DESC"]],
             },
           ],
         })
@@ -93,6 +106,13 @@ function getProducts(req, res) {
             Variant.findAndCountAll({
               where: {
                 productId: variant.rows[0].productId,
+                id: {
+                  [Op.in]: Sequelize.literal(`(
+                    SELECT MAX(id) FROM Variants 
+                    WHERE productId = ${variant.rows[0].productId} 
+                    GROUP BY color
+                  )`)
+                }
               },
               order: [["createdAt", "DESC"]],
               attributes: ["color", "id"],
@@ -101,6 +121,7 @@ function getProducts(req, res) {
           var [errSizes, sizes] = await to(
             Variant.findAndCountAll({
               where: {
+                color: variant.rows[0].color,
                 productId: variant.rows[0].productId,
               },
               order: [["createdAt", "DESC"]],
@@ -121,3 +142,4 @@ function getProducts(req, res) {
     }
   });
 }
+

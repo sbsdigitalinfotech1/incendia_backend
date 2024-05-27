@@ -14,7 +14,6 @@ module.exports = (sequelize, DataTypes) => {
       },
       qty:{
         type: DataTypes.BIGINT,
-        defaultValue: 1
       },
       discountCoupanId:{
         type: DataTypes.BIGINT,

@@ -3,6 +3,7 @@ var router = express.Router();
 const UserAuthController = require("../../controllers/user/authenticationController");
 const UserProfileController = require("../../controllers/user/profileController");
 const UserProductController = require("../../controllers/user/productController");
+const CartController = require("../../controllers/user/cartController");
 const UserController = require("../../controllers/user/userController");
 const AdminAuthController = require("../../controllers/admin/authenticationController");
 const AdminController = require("../../controllers/admin/adminController");
@@ -38,6 +39,13 @@ router.patch("/user/updateFavourite", UserProfileController.updateFavourite);
 // user products 
 
 router.get("/user/getProducts", UserProductController.getProducts);
+
+// user cart 
+
+router.post("/user/addToCart", CartController.addToCart);
+router.post("/user/removeFromCart", CartController.removeFromCart);
+router.patch("/user/updateCart", CartController.updateCart);
+router.get("/user/getCart", CartController.getCart);
 
 
 // admin api's
