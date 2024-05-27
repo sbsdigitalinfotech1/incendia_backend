@@ -1,5 +1,6 @@
 const Guest = require("../../models").guest;
 const User = require("../../models").user;
+const Cart = require("../../models").cart;
 const bcrypt = require("bcrypt");
 const nodemailer = require("nodemailer");
 const OTP = require("../../models").otp;
@@ -76,6 +77,12 @@ function Login(req, res) {
           message: CONFIG.ERROR_MISSING_PASSWORD,
         });
       }
+      if (!body.guestId) {
+        return reject({
+          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+          message: CONFIG.ERROR_MISSING_GUEST_ID,
+        });
+      }
 
       var [err, user] = await to(
         User.findOne({
@@ -107,16 +114,120 @@ function Login(req, res) {
       if (!bcrypt.compareSync(body.password, user.password)) {
         return reject({
           statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
-          message:"Incorrect password"
+          message: "Incorrect password",
         });
       }
 
+      if (user.guestId) {
+        // Find all cart items for the received guestId
+        var [errReceivedGuestCartItems, receivedGuestCartItems] = await to(
+          Cart.findAll({
+            where: {
+              guestId: body.guestId,
+            },
+          })
+        );
+
+        if (errReceivedGuestCartItems) {
+          return reject({
+            statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+            message: ERR_INTERNAL_SERVER_ERROR,
+          });
+        }
+
+        // Find all cart items for the user's guestId
+        var { errUserCartItems, userCartItems } = await to(
+          Cart.findAll({
+            where: {
+              guestId: user.guestId,
+            },
+          })
+        );
+
+        if (errUserCartItems) {
+          return reject({
+            statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+            message: ERR_INTERNAL_SERVER_ERROR,
+          });
+        }
+
+        // Create a map to sum quantities by variantId
+        const variantIdToQtyMap = {};
+
+        // Add receivedGuestCartItems to the map
+        if (receivedGuestCartItems) {
+          for (const item of receivedGuestCartItems) {
+            if (!variantIdToQtyMap[item.variantId]) {
+              variantIdToQtyMap[item.variantId] = {
+                qty: 0,
+              };
+            }
+            variantIdToQtyMap[item.variantId].qty += parseInt(item.qty);
+          }
+        }
+
+        // Add userCartItems to the map
+        if (userCartItems) {
+          for (const item of userCartItems) {
+            if (!variantIdToQtyMap[item.variantId]) {
+              variantIdToQtyMap[item.variantId] = {
+                qty: 0,
+              };
+            }
+            variantIdToQtyMap[item.variantId].qty += parseInt(item.qty);
+          }
+        }
+
+        // delete cart for user
+
+        var [errCart, cart] = await to(
+          Cart.destroy({
+            where: {
+              guestId: user.guestId,
+            },
+          })
+        );
+        if (errCart) {
+          return reject({
+            statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+            message: ERR_INTERNAL_SERVER_ERROR,
+          });
+        }
+
+        var [errCartGuest, cartGuest] = await to(
+          Cart.destroy({
+            where: {
+              guestId: body.guestId,
+            },
+          })
+        );
+
+        if (errCart) {
+          return reject({
+            statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+            message: ERR_INTERNAL_SERVER_ERROR,
+          });
+        }
+
+        // Save or update items in the database
+        for (const variantId in variantIdToQtyMap) {
+          const { qty } = variantIdToQtyMap[variantId];
+          const [cartt, errCartt] = await to(
+            Cart.create({
+              guestId: user.guestId,
+              qty: qty,
+              variantId: variantId,
+            })
+          );
+        }
+      }
 
       var token = user.getJWT();
       [err, user] = await to(
         user.update(
           {
             token: token,
+            guestId: user.guestId ? user.guestId : body.guestId,
           },
           {
             attributes: [
@@ -133,6 +244,7 @@ function Login(req, res) {
           }
         )
       );
+
       return resolve(user);
     } catch (error) {
       return reject({
@@ -374,7 +486,7 @@ function verifyRegistration(req, res) {
       if (!otp) {
         return reject({
           statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
-          message: "wrong otp"
+          message: "wrong otp",
         });
       }
 
@@ -467,7 +579,8 @@ function verifyOTP(req, res) {
       if (!otp) {
         return reject({
           statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
-          message:"wrong otp"});
+          message: "wrong otp",
+        });
       }
 
       // Get the current server time
@@ -483,7 +596,8 @@ function verifyOTP(req, res) {
       if (differenceInMinutes > 5) {
         return reject({
           statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
-          message:"otp expired"});
+          message: "otp expired",
+        });
       }
       return resolve("otp verified");
     } catch (error) {
@@ -531,7 +645,8 @@ function resetPassword(req, res) {
       if (!user) {
         return reject({
           statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
-          message:"user not registered"});
+          message: "user not registered",
+        });
       }
 
       const hashedPassword = await bcrypt.hash(body.password, 10);
