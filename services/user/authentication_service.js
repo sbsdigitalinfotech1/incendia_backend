@@ -131,7 +131,7 @@ function Login(req, res) {
         if (errReceivedGuestCartItems) {
           return reject({
             statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
-            message: ERR_INTERNAL_SERVER_ERROR,
+            message: CONFIG.ERR_INTERNAL_SERVER_ERROR,
           });
         }
 
@@ -147,7 +147,7 @@ function Login(req, res) {
         if (errUserCartItems) {
           return reject({
             statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
-            message: ERR_INTERNAL_SERVER_ERROR,
+            message: CONFIG.ERR_INTERNAL_SERVER_ERROR,
           });
         }
 
@@ -190,7 +190,7 @@ function Login(req, res) {
         if (errCart) {
           return reject({
             statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
-            message: ERR_INTERNAL_SERVER_ERROR,
+            message: CONFIG.ERR_INTERNAL_SERVER_ERROR,
           });
         }
 
@@ -205,7 +205,7 @@ function Login(req, res) {
         if (errCart) {
           return reject({
             statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
-            message: ERR_INTERNAL_SERVER_ERROR,
+            message: CONFIG.ERR_INTERNAL_SERVER_ERROR,
           });
         }
 
@@ -245,7 +245,17 @@ function Login(req, res) {
         )
       );
 
-      return resolve(user);
+      return resolve({
+        token: user.token,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        userType: user.userType,
+        gender: user.gender,
+        phone: user.phone,
+        status: user.status,
+        verified: user.verified,
+        guestId: user.guestId,
+      });
     } catch (error) {
       return reject({
         statusCode: CONFIG.STATUS_CODE_INTERNAL_SERVER,
