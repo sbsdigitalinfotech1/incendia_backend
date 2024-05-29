@@ -136,7 +136,7 @@ function Login(req, res) {
         }
 
         // Find all cart items for the user's guestId
-        var { errUserCartItems, userCartItems } = await to(
+        var [errUserCartItems, userCartItems ] = await to(
           Cart.findAll({
             where: {
               guestId: user.guestId,
@@ -255,6 +255,7 @@ function Login(req, res) {
         status: user.status,
         verified: user.verified,
         guestId: user.guestId,
+        id:user.id
       });
     } catch (error) {
       return reject({
