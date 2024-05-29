@@ -4,6 +4,7 @@ const UserAuthController = require("../../controllers/user/authenticationControl
 const UserProfileController = require("../../controllers/user/profileController");
 const UserProductController = require("../../controllers/user/productController");
 const CartController = require("../../controllers/user/cartController");
+const OrderController = require("../../controllers/user/orderController");
 const UserController = require("../../controllers/user/userController");
 const AdminAuthController = require("../../controllers/admin/authenticationController");
 const AdminController = require("../../controllers/admin/adminController");
@@ -46,6 +47,11 @@ router.post("/user/addToCart", CartController.addToCart);
 router.post("/user/removeFromCart", CartController.removeFromCart);
 router.patch("/user/updateCart", CartController.updateCart);
 router.get("/user/getCart", CartController.getCart);
+
+// user Orders 
+
+router.post("/user/makeOrder", OrderController.makeOrder);
+router.get("/user/getOrders", OrderController.getOrders);
 
 
 // admin api's
