@@ -16,7 +16,7 @@ const fs = require("fs");
 module.exports = {
   getProducts,
   getAvailableColorsAndSizes,
-  getProductsFiltered
+  getProductsFiltered,
 };
 
 // get api's
@@ -37,7 +37,6 @@ function getProducts(req, res) {
 
       whereCluse[Op.and].push({ active: CONFIG.ACTIVE_RECORD });
       whereCluse[Op.and].push({ status: CONFIG.ACTIVE_RECORD });
-
 
       whereCluse[Op.and].push({
         id: {
@@ -113,8 +112,8 @@ function getProducts(req, res) {
                     SELECT MAX(id) FROM Variants 
                     WHERE productId = ${variant.rows[0].productId} 
                     GROUP BY color
-                  )`)
-                }
+                  )`),
+                },
               },
               order: [["createdAt", "DESC"]],
               attributes: ["color", "id"],
@@ -145,7 +144,6 @@ function getProducts(req, res) {
   });
 }
 
-
 function getAvailableColorsAndSizes(req, res) {
   return new Promise(async function (resolve, reject) {
     try {
@@ -153,23 +151,22 @@ function getAvailableColorsAndSizes(req, res) {
       var whereCluse = {};
       whereCluse[Op.and] = [];
 
-
       var [errSize, sizes] = await to(
         Variant.findAll({
           attributes: [
-            [Sequelize.fn('DISTINCT', Sequelize.col('size')), 'size']
+            [Sequelize.fn("DISTINCT", Sequelize.col("size")), "size"],
           ],
-          raw:true,
+          raw: true,
         })
       );
       var [errColors, colors] = await to(
         Variant.findAll({
           attributes: [
-            'colorName',
-            [Sequelize.fn('MAX', Sequelize.col('color')), 'color']
+            "colorName",
+            [Sequelize.fn("MAX", Sequelize.col("color")), "color"],
           ],
-          group: ['colorName'],
-          raw:true,
+          group: ["colorName"],
+          raw: true,
         })
       );
 
@@ -186,8 +183,10 @@ function getAvailableColorsAndSizes(req, res) {
         });
       }
 
-      return resolve({ sizes: sizes.map(size => size.size),
-        colors: colors.map(color => color)});
+      return resolve({
+        sizes: sizes.map((size) => size.size),
+        colors: colors.map((color) => color),
+      });
     } catch (error) {
       return reject({
         statusCode: CONFIG.STATUS_CODE_INTERNAL_SERVER,
@@ -215,24 +214,36 @@ function getProductsFiltered(req, res) {
       if (body.size && body.size !== "undefined") {
         whereCluse[Op.and].push({ size: body.size });
       }
-      if(body.categoryId && body.categoryId !== "undefined"){
+      if (body.categoryId && body.categoryId !== "undefined") {
         whereCluse2[Op.and].push({ id: body.categoryId });
       }
-     if(body.sort && body.sort !== "undefined"){ 
-      if(body.sort=='new'){
-        order=["createdAt", "DESC"]
+      if (body.sort && body.sort !== "undefined") {
+        if (body.sort == "new") {
+          order = ["createdAt", "DESC"];
+        }
+        if (body.sort == "lth") {
+          order = ["price", "ASC"];
+        }
+        if (body.sort == "htl") {
+          order = ["price", "DESC"];
+        }
+      } else {
+        order = ["createdAt", "DESC"];
       }
-      if(body.sort=='lth'){
-        order=["price", "ASC"]
-      }
-      if(body.sort=='htl'){
-        order=["price", "DESC"]
-      }
-    }
 
       whereCluse[Op.and].push({ active: CONFIG.ACTIVE_RECORD });
       whereCluse[Op.and].push({ status: CONFIG.ACTIVE_RECORD });
       whereCluse2[Op.and].push({ status: CONFIG.ACTIVE_RECORD });
+
+      whereCluse[Op.and].push({
+        id: {
+          [Op.in]: Sequelize.literal(`(
+        SELECT MAX(id) 
+        FROM Variants 
+        GROUP BY color
+      )`),
+        },
+      });
 
       var [err, variant] = await to(
         Variant.findAndCountAll({
@@ -294,4 +305,3 @@ function getProductsFiltered(req, res) {
     }
   });
 }
-
