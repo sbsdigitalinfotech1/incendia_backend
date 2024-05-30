@@ -5,7 +5,7 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.BIGINT,
       autoIncrement: true,
     },
-    guestId: {
+    userId: {
       type: DataTypes.STRING,
     },
     variantId: {
@@ -20,31 +20,36 @@ module.exports = (sequelize, DataTypes) => {
     orderId: {
       type: DataTypes.STRING,
     },
-    status:{
-     type: DataTypes.INTEGER,
-     defaultValue:CONFIG.ORDER_STATUS_PENDING
+    transactionId: {
+      type: DataTypes.STRING,
     },
-    paymentStatus:{
-     type: DataTypes.INTEGER,
-     defaultValue:CONFIG.ORDER_PAYMENT_UNPAID
+    paymentStatus: {
+      type: DataTypes.INTEGER,
+      defaultValue: CONFIG.ORDER_PAYMENT_UNPAID,
     },
-    amount:{
-        type: DataTypes.STRING,
-        defaultValue:CONFIG.ORDER_PAYMENT_UNPAID
-       },
-    priceAtTimeOfPay:{
-        type: DataTypes.STRING,
-        defaultValue:CONFIG.ORDER_PAYMENT_UNPAID
-       },
-
+    paymentType:{
+      type: DataTypes.STRING,
+    },
+    status: {
+      type: DataTypes.INTEGER,
+      defaultValue: CONFIG.ORDER_STATUS_PENDING,
+    },
+    amount: {
+      type: DataTypes.STRING,
+      defaultValue: CONFIG.ORDER_PAYMENT_UNPAID,
+    },
+    priceAtTimeOfPay: {
+      type: DataTypes.STRING,
+      defaultValue: CONFIG.ORDER_PAYMENT_UNPAID,
+    },
   });
   Order.associate = function (models) {
     Order.belongsTo(models.variant, {
       foreignKey: "variantId",
       onDelete: "cascade",
     });
-    Order.belongsTo(models.guest, {
-      foreignKey: "guestId",
+    Order.belongsTo(models.user, {
+      foreignKey: "userId",
       onDelete: "cascade",
     });
   };
