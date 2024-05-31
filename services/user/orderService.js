@@ -8,6 +8,7 @@ const Favourite = require("../../models").favourite;
 const Category = require("../../models").category;
 const ProductType = require("../../models").productType;
 const SubCategory = require("../../models").subCategory;
+const Order = require("../../models").order;
 const ProductPhotos = require("../../models").productPhotos;
 const Cart = require("../../models").cart;
 const uploadFile = require("../../utils/image_upload");
@@ -17,7 +18,24 @@ const fs = require("fs");
 module.exports = {
   makeOrder,
   getOrders,
+  updatePaymentStatus,
 };
+
+function generateOrderId() {
+  // Get current timestamp
+  const timestamp = Date.now().toString();
+
+  // Generate random string of capital letters
+  const randomString = Math.random()
+    .toString(36)
+    .substring(2, 12)
+    .toUpperCase();
+
+  // Concatenate timestamp and random string
+  const orderId = randomString + timestamp;
+
+  return orderId.substring(0, 10); // Return only the first 10 characters
+}
 
 // get api's
 
@@ -27,31 +45,100 @@ function makeOrder(req, res) {
       const body = req.body;
       var whereCluse = {};
       whereCluse[Op.and] = [];
+      var orderId;
+      var orderIdNotAvailable = true;
 
-      if (!body.guestId) {
+      if (!body.products && !body.products.length) {
         return reject({
           statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
-          message: CONFIG.ERROR_MISSING_GUEST_ID,
+          message: CONFIG.ERROR_MISSING_QTY,
         });
       }
-      if (!body.variantId) {
+      if (!body.userId) {
         return reject({
           statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
           message: CONFIG.ERROR_MISSING_VARIANT_ID,
         });
       }
-      if (!body.qty) {
+      if (!body.paymentType) {
+        return reject({
+          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+          message: "Missing Payment Type",
+        });
+      }
+
+      while (orderIdNotAvailable) {
+        orderId = generateOrderId();
+        var [errOrderId, orderId] = await to(
+          Order.findOne({
+            where: {
+              orderId: orderId,
+            },
+          })
+        );
+        if (!orderId) {
+          orderIdNotAvailable = false;
+        }
+      }
+      for (const item of body.products) {
+        const variant = await Variant.findOne({
+          where: { id: item.variantId },
+        });
+
+        var [err, order] = await to(
+          Order.create({
+            ...body,
+            orderId,
+            variantId: item.variantId,
+            qty: item.qty,
+            userId: body.userId,
+            amount: variant.amount * qty,
+            priceAtTimeOfPay: variant.price,
+            discountCoupanId: body.discountCoupanId ? discountCoupanId : null,
+            paymentType: body.paymentType,
+          })
+        );
+
+        if (err) {
+          return reject({
+            statusCode: CONFIG.STATUS_CODE_INTERNAL_SERVER,
+            message: CONFIG.ERR_INTERNAL_SERVER_ERROR,
+          });
+        }
+        if (!order) {
+          return reject({
+            statusCode: CONFIG.STATUS_CODE_INTERNAL_SERVER,
+            message: CONFIG.ERR_INTERNAL_SERVER_ERROR,
+          });
+        }
+      }
+      return resolve({ message: "order created", orderId });
+    } catch (error) {
+      return reject({
+        statusCode: CONFIG.STATUS_CODE_INTERNAL_SERVER,
+        message: error,
+      });
+    }
+  });
+}
+function updatePaymentStatus(req, res) {
+  return new Promise(async function (resolve, reject) {
+    try {
+      const body = req.body;
+      var whereCluse = {};
+      whereCluse[Op.and] = [];
+
+      if (!body.orderId) {
         return reject({
           statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
           message: CONFIG.ERROR_MISSING_QTY,
         });
       }
 
-      var [err, cart] = await to(
-        Cart.findOne({
+      var [err, order] = await to(
+        Order.findOne({
           where: {
-            variantId: body.variantId,
-            guestId: body.guestId,
+            orderId: body.orderId,
           },
         })
       );
@@ -62,26 +149,31 @@ function makeOrder(req, res) {
           message: CONFIG.ERR_INTERNAL_SERVER_ERROR,
         });
       }
-      if (cart) {
-        return resolve("already added");
+      if (!order) {
+        return resolve({
+          success: false,
+          message: "order not found",
+        });
       }
 
-      var [errs, carts] = await to(
-        Cart.create({
-          variantId: body.variantId,
-          guestId: body.guestId,
-          qty: body.qty,
+      var [errOrder, updateOrder] = await to(
+        order.update({
+          ...body,
         })
       );
-
-      if (errs) {
+      if (errOrder) {
         return reject({
           statusCode: CONFIG.STATUS_CODE_INTERNAL_SERVER,
           message: CONFIG.ERR_INTERNAL_SERVER_ERROR,
         });
       }
-
-      return resolve("added");
+      if (!updateOrder) {
+        return resolve({
+          success: false,
+          message: "order not found",
+        });
+      }
+      return resolve("updated");
     } catch (error) {
       return reject({
         statusCode: CONFIG.STATUS_CODE_INTERNAL_SERVER,
@@ -93,181 +185,26 @@ function makeOrder(req, res) {
 function getOrders(req, res) {
   return new Promise(async function (resolve, reject) {
     try {
-      const body = req.body;
-      var whereCluse = {};
-      whereCluse[Op.and] = [];
-
-      if (!body.guestId) {
-        return reject({
-          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
-          message: CONFIG.ERROR_MISSING_GUEST_ID,
-        });
-      }
-      if (!body.variantId) {
-        return reject({
-          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
-          message: CONFIG.ERROR_MISSING_VARIANT_ID,
-        });
-      }
-
-      var [err, cart] = await to(
-        Cart.findOne({
-          where: {
-            variantId: body.variantId,
-            guestId: body.guestId,
-          },
-        })
-      );
-
-      if (err) {
-        return reject({
-          statusCode: CONFIG.STATUS_CODE_INTERNAL_SERVER,
-          message: CONFIG.ERR_INTERNAL_SERVER_ERROR,
-        });
-      }
-      if (cart) {
-        var [errs, carts] = await to(cart.destroy());
-
-        if (errs) {
-          return reject({
-            statusCode: CONFIG.STATUS_CODE_INTERNAL_SERVER,
-            message: CONFIG.ERR_INTERNAL_SERVER_ERROR,
-          });
-        }
-      }
-
-      return resolve("removed");
-    } catch (error) {
-      return reject({
-        statusCode: CONFIG.STATUS_CODE_INTERNAL_SERVER,
-        message: error,
-      });
-    }
-  });
-}
-
-function updateCart(req, res) {
-  return new Promise(async function (resolve, reject) {
-    try {
-      const body = req.body;
-      var whereCluse = {};
-      whereCluse[Op.and] = [];
-
-      if (!body.guestId) {
-        return reject({
-          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
-          message: CONFIG.ERROR_MISSING_GUEST_ID,
-        });
-      }
-      if (!body.variantId) {
-        return reject({
-          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
-          message: CONFIG.ERROR_MISSING_VARIANT_ID,
-        });
-      }
-      if (!body.qty) {
-        return reject({
-          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
-          message: CONFIG.ERROR_MISSING_QTY,
-        });
-      }
-
-      var [err, cart] = await to(
-        Cart.findOne({
-          where: {
-            variantId: body.variantId,
-            guestId: body.guestId,
-          },
-        })
-      );
-
-      if (err) {
-        return reject({
-          statusCode: CONFIG.STATUS_CODE_INTERNAL_SERVER,
-          message: CONFIG.ERR_INTERNAL_SERVER_ERROR,
-        });
-      }
-      if (cart) {
-        var [errs, carts] = await to(
-          cart.update({
-            qty: body.qty,
-          })
-        );
-
-        if (errs) {
-          return reject({
-            statusCode: CONFIG.STATUS_CODE_INTERNAL_SERVER,
-            message: CONFIG.ERR_INTERNAL_SERVER_ERROR,
-          });
-        }
-      }
-
-      return resolve("updated");
-    } catch (error) {
-      return reject({
-        statusCode: CONFIG.STATUS_CODE_INTERNAL_SERVER,
-        message: error,
-      });
-    }
-  });
-}
-function getCart(req, res) {
-  return new Promise(async function (resolve, reject) {
-    try {
       const body = req.query;
       var whereCluse = {};
       whereCluse[Op.and] = [];
+      const page = parseInt(body.page) ?? 1;
+      const limit = parseInt(body.pageSize) ?? 10;
+      const offset = (page - 1) * limit;
 
-      if (!body.guestId && body.guestId == "undefined") {
-        return reject({
-          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
-          message: CONFIG.ERROR_MISSING_GUEST_ID,
-        });
+      if (body.id && body.id !== "undefined") {
+        whereCluse[Op.and].push({ id: body.id });
+      }
+      if (body.userId && body.userId !== "undefined") {
+        whereCluse[Op.and].push({ userId: body.userId });
       }
 
-      var [err, cart] = await to(
-        Cart.findAndCountAll({
-          where: {
-            guestId: body.guestId,
-          },
-          include: [
-            {
-              model: Variant,
-              as: "variant",
-              required: true,
-              attributes: [
-                "id",
-                "name",
-                "price",
-                "mrp",
-                "stock",
-                "colorName",
-                "size",
-              ],
-              include: [
-                {
-                  model: ProductPhotos,
-                  required: false,
-                  where: {
-                    main: true,
-                  },
-                  attributes: ["url"],
-                },
-                {
-                  model: Product,
-                  required: true,
-                  attributes: ["name"],
-                  include: [
-                    {
-                      model: Category,
-                      required: true,
-                      attributes: ["name"],
-                    },
-                  ],
-                },
-              ],
-            },
-          ],
+      var [err, order] = await to(
+        Order.findAndCountAll({
+          where: whereCluse,
+          limit: limit,
+          offset: offset,
+          order: [["createdAt", "DESC"]],
         })
       );
 
@@ -277,23 +214,14 @@ function getCart(req, res) {
           message: CONFIG.ERR_INTERNAL_SERVER_ERROR,
         });
       }
-
-      var totalMrp = 0;
-      var totalPrice = 0;
-
-      for (const item of cart.rows) {
-        totalMrp += item.variant.mrp * item.qty;
-        totalPrice += item.variant.price * item.qty;
+      if (!order) {
+        return reject({
+          statusCode: CONFIG.STATUS_CODE_INTERNAL_SERVER,
+          message: CONFIG.ERR_INTERNAL_SERVER_ERROR,
+        });
       }
-      return resolve({
-        ...cart,
-        cartData: {
-          totalMrp: totalMrp,
-          totalPrice: totalPrice,
-          totalDiscount: totalMrp - totalPrice,
-          grandtotal: totalPrice,
-        },
-      });
+
+      return resolve(order);
     } catch (error) {
       return reject({
         statusCode: CONFIG.STATUS_CODE_INTERNAL_SERVER,

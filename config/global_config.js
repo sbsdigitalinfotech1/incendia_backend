@@ -31,6 +31,7 @@ CONFIG.ERROR_MISSING_GUEST_ID = 'Please provide guest Id';
 CONFIG.ERROR_MISSING_USER_ID = 'Please provide user Id';
 CONFIG.ERROR_MISSING_VARIANT_ID = 'Please provide variant Id';
 CONFIG.ERROR_MISSING_QTY = 'Please provide quantity';
+CONFIG.ERROR_MISSING_ORDER_ID = 'Please provide order Id';
 CONFIG.ERROR_MISSING_PHONE = 'Please provide phoneNo';
 CONFIG.ERROR_MISSING_ID = 'Please provide ID';
 CONFIG.ERROR_MISSING_EMAIL = 'Please provide email';

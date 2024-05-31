@@ -40,6 +40,8 @@ router.patch("/user/updateFavourite", UserProfileController.updateFavourite);
 // user products 
 
 router.get("/user/getProducts", UserProductController.getProducts);
+router.get("/user/getProductsFiltered", UserProductController.getProductsFiltered);
+router.get("/user/getAvailableColorsAndSizes", UserProductController.getAvailableColorsAndSizes);
 
 // user cart 
 
@@ -51,6 +53,7 @@ router.get("/user/getCart", CartController.getCart);
 // user Orders 
 
 router.post("/user/makeOrder", OrderController.makeOrder);
+router.post("/user/updatePaymentStatus", OrderController.updatePaymentStatus);
 router.get("/user/getOrders", OrderController.getOrders);
 
 
