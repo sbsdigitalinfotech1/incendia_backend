@@ -6,7 +6,7 @@ module.exports = (sequelize, DataTypes) => {
       autoIncrement: true,
     },
     userId: {
-      type: DataTypes.STRING,
+      type: DataTypes.BIGINT,
     },
     variantId: {
       type: DataTypes.BIGINT,
@@ -14,8 +14,11 @@ module.exports = (sequelize, DataTypes) => {
     qty: {
       type: DataTypes.BIGINT,
     },
-    discountCoupanId: {
+    deliveryAddress: {
       type: DataTypes.BIGINT,
+    },
+    discountCoupanId: {
+      type: DataTypes.STRING,
     },
     orderId: {
       type: DataTypes.STRING,
@@ -27,7 +30,7 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       defaultValue: CONFIG.ORDER_PAYMENT_UNPAID,
     },
-    paymentType:{
+    paymentType: {
       type: DataTypes.STRING,
     },
     status: {
@@ -50,6 +53,10 @@ module.exports = (sequelize, DataTypes) => {
     });
     Order.belongsTo(models.user, {
       foreignKey: "userId",
+      onDelete: "cascade",
+    });
+    Order.belongsTo(models.address, {
+      foreignKey: "deliveryAddress",
       onDelete: "cascade",
     });
   };

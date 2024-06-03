@@ -54,6 +54,12 @@ function makeOrder(req, res) {
           message: CONFIG.ERROR_MISSING_QTY,
         });
       }
+      if (!body.addressId) {
+        return reject({
+          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+          message: CONFIG.ERROR_MISSING_ADDRESS_LINE_1,
+        });
+      }
       if (!body.userId) {
         return reject({
           statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
@@ -69,14 +75,14 @@ function makeOrder(req, res) {
 
       while (orderIdNotAvailable) {
         orderId = generateOrderId();
-        var [errOrderId, orderId] = await to(
+        var [errOrderrId, orderrId] = await to(
           Order.findOne({
             where: {
               orderId: orderId,
             },
           })
         );
-        if (!orderId) {
+        if (!orderrId) {
           orderIdNotAvailable = false;
         }
       }
@@ -87,14 +93,16 @@ function makeOrder(req, res) {
 
         var [err, order] = await to(
           Order.create({
-            ...body,
             orderId,
             variantId: item.variantId,
             qty: item.qty,
             userId: body.userId,
-            amount: variant.amount * qty,
+            amount: parseInt(variant.price) * item.qty,
+            deliveryAddress: body.addressId,
             priceAtTimeOfPay: variant.price,
-            discountCoupanId: body.discountCoupanId ? discountCoupanId : null,
+            discountCoupanId: body.discountCoupanId
+              ? body.discountCoupanId
+              : null,
             paymentType: body.paymentType,
           })
         );
@@ -205,6 +213,11 @@ function getOrders(req, res) {
           limit: limit,
           offset: offset,
           order: [["createdAt", "DESC"]],
+          include: [
+            {
+              model: Address,
+            },
+          ],
         })
       );
 

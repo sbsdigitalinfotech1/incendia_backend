@@ -53,7 +53,7 @@ router.get("/user/getCart", CartController.getCart);
 // user Orders 
 
 router.post("/user/makeOrder", OrderController.makeOrder);
-router.post("/user/updatePaymentStatus", OrderController.updatePaymentStatus);
+router.patch("/user/updatePaymentStatus", OrderController.updatePaymentStatus);
 router.get("/user/getOrders", OrderController.getOrders);
 
 
