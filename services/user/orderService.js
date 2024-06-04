@@ -217,6 +217,21 @@ function getOrders(req, res) {
             {
               model: Address,
             },
+            {
+              model: Variant,
+              include:[
+                {
+                  model: ProductPhotos,
+                  where:{
+                    main:true
+                  },
+                  attributes: ["url"],
+                  required: false
+                }
+              ],
+              attributes: ["colorName","mrp","price","offerPrice","size","name","id"],
+              required: false
+            },
           ],
         })
       );
