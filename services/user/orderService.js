@@ -206,6 +206,9 @@ function getOrders(req, res) {
       if (body.userId && body.userId !== "undefined") {
         whereCluse[Op.and].push({ userId: body.userId });
       }
+      if (body.orderId && body.orderId !== "undefined") {
+        whereCluse[Op.and].push({ orderId: body.orderId });
+      }
 
       var [err, order] = await to(
         Order.findAndCountAll({
