@@ -6,6 +6,9 @@ const Category = require("../../models").category;
 const ProductType = require("../../models").productType;
 const SubCategory = require("../../models").subCategory;
 const ProductPhotos = require("../../models").productPhotos;
+const Order = require("../../models").order;
+const User = require("../../models").user;
+const Address = require("../../models").address;
 const uploadFile = require("../../utils/image_upload");
 const path = require("path");
 const fs = require("fs");
@@ -27,6 +30,8 @@ module.exports = {
   updateCategory,
   updateProductType,
   updateSubCategory,
+  getOrders,
+  updateOrder,
 };
 
 function uploadUserMedia(req, res) {
@@ -878,6 +883,117 @@ function getVariant(req, res) {
   });
 }
 
+function getOrders(req, res) {
+  return new Promise(async function (resolve, reject) {
+    try {
+      const body = req.query;
+      var whereCluse = {};
+      whereCluse[Op.and] = [];
+      const page = parseInt(body.page) ?? 1;
+      const limit = parseInt(body.pageSize) ?? 10;
+      const offset = (page - 1) * limit;
+
+      if (body.id && body.id !== "undefined") {
+        whereCluse[Op.and].push({ id: body.id });
+      }
+
+      if (body.orderId && body.orderId !== "undefined") {
+        whereCluse[Op.and].push({ orderId: body.orderId });
+      }
+      if (body.status && body.status !== "undefined") {
+        whereCluse[Op.and].push({ status: body.status });
+      }
+      if (body.userId && body.userId !== "undefined") {
+        whereCluse[Op.and].push({ userId: body.userId });
+      }
+      if (body.paymentStatus && body.paymentStatus !== "undefined") {
+        whereCluse[Op.and].push({ paymentStatus: body.paymentStatus });
+      }
+
+      if (body.keyword && body.keyword !== "undefined") {
+        const array = body.keyword.split(" ");
+        for (var i = 0; i < array.length; i++) {
+          whereCluse[Op.and].push({
+            [Op.or]: [
+              {
+                orderId: {
+                  [Op.like]: "%" + array[i] + "%",
+                },
+              },
+              Sequelize.where(Sequelize.col("variant.name"), {
+                [Op.like]: "%" + array[i] + "%",
+              }),
+              Sequelize.where(Sequelize.col("user.firstName"), {
+                [Op.like]: "%" + array[i] + "%",
+              }),
+              Sequelize.where(Sequelize.col("user.lastName"), {
+                [Op.like]: "%" + array[i] + "%",
+              }),
+              Sequelize.where(Sequelize.col("user.email"), {
+                [Op.like]: "%" + array[i] + "%",
+              }),
+            ],
+          });
+        }
+      }
+
+      // whereCluse[Op.and].push({ status: CONFIG.ACTIVE_RECORD });
+
+      var [err, order] = await to(
+        Order.findAndCountAll({
+          where: whereCluse,
+          limit: limit,
+          offset: offset,
+          order: [["createdAt", "DESC"]],
+          include: [
+            {
+              model: Address,
+            },
+            {
+              model: User,
+            },
+            {
+              model: Variant,
+              include:[
+                {
+                  model: ProductPhotos,
+                  where:{
+                    main:true
+                  },
+                  attributes: ["url"],
+                  required: false
+                }
+              ],
+              required: false
+            },
+          ],
+        })
+      );
+
+      if (err) {
+        return reject({
+          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+          message: err,
+        });
+      }
+
+      if (!order) {
+        return reject({
+          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+          message: CONFIG.MESS_INTERNAL_SERVER_ERROR,
+        });
+      }
+
+      return resolve(order);
+    } catch (error) {
+      return reject({
+        statusCode: CONFIG.STATUS_CODE_INTERNAL_SERVER,
+        message: error,
+      });
+    }
+  });
+}
+
 // update apis
 
 function updateProduct(req, res) {
@@ -1316,3 +1432,67 @@ function updateProductType(req, res) {
     }
   });
 }
+function updateOrder(req, res) {
+  return new Promise(async function (resolve, reject) {
+    try {
+      const body = req.body;
+
+      if (!body.id) {
+        return reject({
+          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+          message: CONFIG.ERROR_MISSING_ID,
+        });
+      }
+
+      var [err, order] = await to(
+        Order.findOne({
+          where: {
+            id: body.id,
+          },
+        })
+      );
+
+      if (err) {
+        return reject({
+          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+          message: err,
+        });
+      }
+
+      if (!order) {
+        return reject({
+          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+          message: "product not found",
+        });
+      }
+
+      [err, order] = await to(
+        order.update({
+          ...body,
+        })
+      );
+
+      if (err) {
+        return reject({
+          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+          message: err,
+        });
+      }
+
+      if (!order) {
+        return reject({
+          statusCode: CONFIG.STATUS_CODE_BAD_REQUEST,
+          message: "error updating",
+        });
+      }
+
+      return resolve("updated successfully");
+    } catch (error) {
+      return reject({
+        statusCode: CONFIG.STATUS_CODE_INTERNAL_SERVER,
+        message: error,
+      });
+    }
+  });
+}
+

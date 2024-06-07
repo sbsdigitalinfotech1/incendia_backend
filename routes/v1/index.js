@@ -89,5 +89,9 @@ router.get("/admin/getSubCategory", AdminController.getSubCategory);
 router.post("/admin/addSubCategory", AdminController.addSubCategory);
 router.patch("/admin/updateSubCategory", AdminController.updateSubCategory);
 
+// admin orders 
+router.get("/admin/getOrders", AdminController.getOrders);
+router.patch("/admin/updateOrder", AdminController.updateOrder);
+
 //EXPORT THE ROUTER HERE
 module.exports = router;
