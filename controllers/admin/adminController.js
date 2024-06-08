@@ -17,6 +17,8 @@ module.exports = {
   updateCategory,
   updateProductType,
   updateSubCategory,
+  getOrders,
+  updateOrder
 };
 
 function uploadUserMedia(req, res) {
@@ -168,6 +170,21 @@ function getVariant(req, res) {
     });
 }
 
+function getOrders(req, res) {
+  AdminServices.getOrders(req, res)
+    .then((result) => {
+      return ReS(res, { data: result }, CONFIG.STATUS_CODE_OK);
+    })
+    .catch((error) => {
+      return ReE(
+        res,
+        { message: error.message == undefined ? error : error.message },
+        error.statusCode == undefined ? CONFIG.ERROR_CODE : error.statusCode
+      );
+    });
+}
+
+
 
 // update apis 
 
@@ -226,6 +243,20 @@ function updateProductType(req, res) {
 }
 function updateSubCategory(req, res) {
   AdminServices.updateSubCategory(req, res)
+    .then((result) => {
+      return ReS(res, { data: result }, CONFIG.STATUS_CODE_OK);
+    })
+    .catch((error) => {
+      return ReE(
+        res,
+        { message: error.message == undefined ? error : error.message },
+        error.statusCode == undefined ? CONFIG.ERROR_CODE : error.statusCode
+      );
+    });
+}
+
+function updateOrder(req, res) {
+  AdminServices.updateOrder(req, res)
     .then((result) => {
       return ReS(res, { data: result }, CONFIG.STATUS_CODE_OK);
     })
