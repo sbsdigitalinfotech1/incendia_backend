@@ -8,12 +8,19 @@ module.exports = (sequelize, DataTypes) => {
     },
     name: {
       type: DataTypes.STRING,
-      unique: true,
+    },
+    status: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: CONFIG.ACTIVE_RECORD,
     },
   });
   ProductType.associate = function (models) {
-   
+    ProductType.hasMany(models.category, {
+      foreignKey: "productTypeId",
+      as:"categories",
+      onDelete: "cascade",
+    });
   };
-  
+
   return ProductType;
 };

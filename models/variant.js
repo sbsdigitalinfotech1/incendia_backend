@@ -8,10 +8,12 @@ module.exports = (sequelize, DataTypes) => {
     },
     name: {
       type: DataTypes.STRING,
-      unique: true,
       defaultValue: "",
     },
     color: {
+      type: DataTypes.STRING,
+    },
+    colorName: {
       type: DataTypes.STRING,
     },
     size: {
@@ -19,44 +21,40 @@ module.exports = (sequelize, DataTypes) => {
     },
     price: {
       type: DataTypes.STRING,
+      defaultValue:'0'
     },
     mrp: {
       type: DataTypes.STRING,
+      defaultValue:'0'
     },
     offerPrice: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING
     },
     codAvailable: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
     },
     productHighlight: {
-        type: DataTypes.TEXT, // Use TEXT data type
-        defaultValue: "{}", // Default value as stringified JSON object
-        get: function() {
-          // Parse JSON string to object
-          return JSON.parse(this.getDataValue('productHighlight'));
-        },
-        set: function(val) {
-          // Stringify object to JSON string
-          this.setDataValue('productHighlight', JSON.stringify(val));
-        },
+      type: DataTypes.TEXT,
     },
     productsDescription: {
-        type: DataTypes.TEXT, // Use TEXT data type
-        defaultValue: "{}", // Default value as stringified JSON object
-        get: function() {
-          // Parse JSON string to object
-          return JSON.parse(this.getDataValue('productsDescription'));
-        },
-        set: function(val) {
-          // Stringify object to JSON string
-          this.setDataValue('productsDescription', JSON.stringify(val));
-        },
+      type: DataTypes.TEXT,
     },
-    productId:{
-        type: DataTypes.BIGINT
-    }
+    productId: {
+      type: DataTypes.BIGINT,
+    },
+    status: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: CONFIG.ACTIVE_RECORD,
+    },
+    stock: {
+      type: DataTypes.INTEGER,
+      defaultValue: CONFIG.INACTIVE_RECORD,
+    },
+    active: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: CONFIG.ACTIVE_RECORD,
+    },
   });
   Variant.associate = function (models) {
     Variant.hasMany(models.productPhotos, {
