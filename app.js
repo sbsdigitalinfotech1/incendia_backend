@@ -5,7 +5,7 @@ const express = require("express");
 const path = require("path");
 const bodyParser = require("body-parser");
 const app = express();
-const PORT = 8000;
+const PORT = process.env.PORT || 3001;
 
 // Define the allowed origin
 const allowedOrigin = "http://localhost:3000";
