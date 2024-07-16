@@ -3,11 +3,10 @@
   "version": "1.0.0",
   "description": "",
   "main": "app.js",
-  "type":"module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node app.js",
-    "dev": "node app.js"
+    "start": "nodemon app.js",
+    "dev": "nodemon app.js"
   },
   "keywords": [],
   "author": "itshimanshu7830@gmail.com",
@@ -22,6 +21,7 @@
     "moment-timezone": "^0.5.45",
     "mysql2": "^3.9.6",
     "nodemailer": "^6.9.13",
+    "nodemon": "^3.1.4",
     "parse-error": "^0.2.0",
     "sequelize": "^6.37.3",
     "tedious": "^18.1.0"
