@@ -4,10 +4,6 @@
         {
             "src":"./app.js",
             "use":"@vercel/node"
-        },
-       {
-            "src":"./routes/v1/index.js",
-            "use":"@vercel/node"
         }
     ],
     "routes":[
